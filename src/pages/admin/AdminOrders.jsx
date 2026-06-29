@@ -1,0 +1,141 @@
+import { useState } from 'react';
+import { ChevronDown, ChevronUp, Phone, Mail, MapPin } from 'lucide-react';
+import { useStore } from '../../context/StoreContext';
+
+const STATUS_OPTIONS = ['pending', 'confirmed', 'delivered', 'cancelled'];
+const statusColors = { pending: 'status-pending', confirmed: 'status-confirmed', delivered: 'status-delivered', cancelled: 'status-cancelled' };
+
+export default function AdminOrders() {
+  const { state, actions } = useStore();
+  const [expandedId, setExpandedId] = useState(null);
+  const [filter, setFilter] = useState('all');
+
+  const filtered = filter === 'all' ? state.orders : state.orders.filter(o => o.status === filter);
+
+  return (
+    <div>
+      <div className="admin-page-header">
+        <div>
+          <h1 className="admin-page-title">Orders</h1>
+          <p className="admin-page-subtitle">{state.orders.length} total orders received</p>
+        </div>
+      </div>
+
+      {/* Filter tabs */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
+        {['all', ...STATUS_OPTIONS].map(s => (
+          <button
+            key={s}
+            className={`btn btn-sm ${filter === s ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setFilter(s)}
+          >
+            {s.charAt(0).toUpperCase() + s.slice(1)}
+            {s !== 'all' && (
+              <span style={{ marginLeft: 4 }}>({state.orders.filter(o => o.status === s).length})</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-state-icon">📋</div>
+          <h3 className="empty-state-title">No orders yet</h3>
+          <p className="empty-state-desc">Orders placed by customers will appear here.</p>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {filtered.map(order => (
+            <div key={order.id} className="admin-table-wrap">
+              {/* Order header row */}
+              <div
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '16px 20px', cursor: 'pointer', gap: 12, flexWrap: 'wrap'
+                }}
+                onClick={() => setExpandedId(expandedId === order.id ? null : order.id)}
+              >
+                <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', flex: 1 }}>
+                  <span style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 700, color: 'var(--forest)' }}>{order.id}</span>
+                  <span style={{ fontWeight: 600 }}>{order.customer.firstName} {order.customer.lastName}</span>
+                  <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{order.items.length} item{order.items.length !== 1 ? 's' : ''}</span>
+                  <span style={{ fontWeight: 700, color: 'var(--forest)' }}>₹{order.total.toLocaleString('en-IN')}</span>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <select
+                    className="form-select"
+                    style={{ width: 'auto', fontSize: 13, padding: '6px 10px' }}
+                    value={order.status}
+                    onClick={e => e.stopPropagation()}
+                    onChange={e => { actions.updateOrderStatus(order.id, e.target.value); actions.toast(`Order ${order.id} marked as ${e.target.value}`); }}
+                  >
+                    {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                  </select>
+                  <span className={`order-status-badge ${statusColors[order.status]}`}>
+                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                  </span>
+                  {expandedId === order.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </div>
+              </div>
+
+              {/* Expanded detail */}
+              {expandedId === order.id && (
+                <div style={{ borderTop: '1px solid var(--border)', padding: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
+                  {/* Customer info */}
+                  <div>
+                    <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 14 }}>
+                      Customer Details
+                    </h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 14 }}>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <Mail size={14} color="var(--moss)" /> {order.customer.email}
+                      </div>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <Phone size={14} color="var(--moss)" /> {order.customer.phone}
+                      </div>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                        <MapPin size={14} color="var(--moss)" style={{ flexShrink: 0, marginTop: 2 }} />
+                        <span>{order.customer.address}, {order.customer.city}, {order.customer.state} – {order.customer.pincode}</span>
+                      </div>
+                      {order.customer.notes && (
+                        <div style={{ background: 'var(--cream)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
+                          📝 {order.customer.notes}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Items */}
+                  <div>
+                    <h4 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 14 }}>
+                      Order Items
+                    </h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {order.items.map((item, i) => (
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, paddingBottom: 8, borderBottom: '1px solid var(--border)' }}>
+                          <span>{item.name} × {item.qty} {item.unit}</span>
+                          <span style={{ fontWeight: 600 }}>₹{item.total.toLocaleString('en-IN')}</span>
+                        </div>
+                      ))}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--text-muted)' }}>
+                        <span>Shipping</span>
+                        <span>{order.shipping === 0 ? 'FREE' : `₹${order.shipping}`}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: 16, marginTop: 4 }}>
+                        <span>Total</span>
+                        <span style={{ color: 'var(--forest)' }}>₹{order.total.toLocaleString('en-IN')}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,162 @@
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useStore } from '../../context/StoreContext';
+
+export default function CheckoutPage() {
+  const { state, computed, actions } = useStore();
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
+    firstName: '', lastName: '', email: '', phone: '',
+    address: '', city: '', state: '', pincode: '',
+    notes: '',
+  });
+  const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+
+  const cartItems = state.cart.map(item => ({
+    ...item,
+    product: state.products.find(p => p.id === item.productId),
+  })).filter(i => i.product);
+
+  const shipping = computed.cartTotal >= 1000 ? 0 : 99;
+  const grandTotal = computed.cartTotal + shipping;
+
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const validate = () => {
+    const e = {};
+    if (!form.firstName.trim()) e.firstName = 'Required';
+    if (!form.lastName.trim()) e.lastName = 'Required';
+    if (!form.email.includes('@')) e.email = 'Valid email required';
+    if (form.phone.length < 10) e.phone = 'Valid phone required';
+    if (!form.address.trim()) e.address = 'Required';
+    if (!form.city.trim()) e.city = 'Required';
+    if (!form.state.trim()) e.state = 'Required';
+    if (form.pincode.length < 6) e.pincode = 'Valid pincode required';
+    setErrors(e);
+    return !Object.keys(e).length;
+  };
+
+  const handleSubmit = () => {
+    if (!validate()) return;
+    setSubmitting(true);
+    const order = {
+      customer: form,
+      items: cartItems.map(({ product, qty }) => ({
+        productId: product.id,
+        name: product.name,
+        pricePerKg: product.pricePerKg,
+        unit: product.unit,
+        qty,
+        total: product.pricePerKg * qty,
+      })),
+      subtotal: computed.cartTotal,
+      shipping,
+      total: grandTotal,
+    };
+    setTimeout(() => {
+      actions.placeOrder(order);
+      actions.clearCart();
+      navigate('/order-success');
+    }, 600);
+  };
+
+  if (cartItems.length === 0) return (
+    <div className="container section">
+      <div className="empty-state">
+        <div className="empty-state-icon">🛒</div>
+        <h3 className="empty-state-title">Nothing to checkout</h3>
+        <Link to="/shop" className="btn btn-primary">Go to Shop</Link>
+      </div>
+    </div>
+  );
+
+  const Field = ({ k, label, placeholder, type = 'text', half }) => (
+    <div className="form-group">
+      <label className="form-label">{label} *</label>
+      <input
+        className="form-input" type={type}
+        placeholder={placeholder} value={form[k]}
+        onChange={e => set(k, e.target.value)}
+      />
+      {errors[k] && <span className="form-error">{errors[k]}</span>}
+    </div>
+  );
+
+  return (
+    <div className="checkout-page">
+      <div className="container">
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, color: 'var(--soil)', marginBottom: 32 }}>
+          Checkout
+        </h1>
+
+        <div className="checkout-grid">
+          <div className="checkout-form-card">
+            <h2 className="card-title">Delivery Details</h2>
+            <div className="form-section">
+              <div className="form-row">
+                <Field k="firstName" label="First Name" placeholder="Ravi" />
+                <Field k="lastName" label="Last Name" placeholder="Kumar" />
+              </div>
+              <div className="form-row">
+                <Field k="email" label="Email" placeholder="ravi@example.com" type="email" />
+                <Field k="phone" label="Phone" placeholder="9876543210" type="tel" />
+              </div>
+              <Field k="address" label="Address" placeholder="123, 4th Main, Indiranagar" />
+              <div className="form-row">
+                <Field k="city" label="City" placeholder="Bangalore" />
+                <Field k="state" label="State" placeholder="Karnataka" />
+              </div>
+              <Field k="pincode" label="Pincode" placeholder="560038" />
+              <div className="form-group">
+                <label className="form-label">Order Notes (optional)</label>
+                <textarea
+                  className="form-textarea" rows={3}
+                  placeholder="Any special instructions for delivery..."
+                  value={form.notes} onChange={e => set('notes', e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div style={{ marginTop: 24, padding: '16px 20px', background: 'var(--cream)', borderRadius: 'var(--radius-md)', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.7 }}>
+              💳 <strong>Payment on delivery.</strong> We accept cash and UPI at your doorstep. You'll receive a call to confirm your order before dispatch.
+            </div>
+          </div>
+
+          <div style={{ position: 'sticky', top: 'calc(var(--nav-height) + 20px)' }}>
+            <div className="order-summary-card">
+              <h2 className="card-title">Order Summary</h2>
+              <div className="order-summary-items">
+                {cartItems.map(({ product, qty }) => (
+                  <div key={product.id} className="order-summary-item">
+                    <span className="order-summary-item-name">{product.name} × {qty} {product.unit}</span>
+                    <span className="order-summary-item-price">₹{(product.pricePerKg * qty).toLocaleString('en-IN')}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="divider" />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '12px 0' }}>
+                <div className="total-row">
+                  <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>Subtotal</span>
+                  <span>₹{computed.cartTotal.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="total-row">
+                  <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>Shipping</span>
+                  <span style={{ color: shipping === 0 ? 'var(--success)' : 'inherit' }}>{shipping === 0 ? 'FREE' : `₹${shipping}`}</span>
+                </div>
+              </div>
+              <div className="divider" />
+              <div className="total-row" style={{ margin: '12px 0 24px' }}>
+                <span className="total-label">Grand Total</span>
+                <span className="total-value">₹{grandTotal.toLocaleString('en-IN')}</span>
+              </div>
+              <button className="btn btn-primary btn-full" onClick={handleSubmit} disabled={submitting}>
+                {submitting ? 'Placing order...' : 'Place Order →'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
