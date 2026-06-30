@@ -101,16 +101,7 @@ export default function CheckoutPage() {
   return (
     <div className="checkout-page">
       <div className="container">
-        <h1
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: 32,
-            color: "var(--soil)",
-            marginBottom: 32,
-          }}
-        >
-          Checkout
-        </h1>
+        <h1 className="page-title">Checkout</h1>
 
         <div className="checkout-grid">
           <div className="checkout-form-card">
@@ -209,12 +200,7 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          <div
-            style={{
-              position: "sticky",
-              top: "calc(var(--nav-height) + 20px)",
-            }}
-          >
+          <div className="sticky-summary">
             <div className="order-summary-card">
               <h2 className="card-title">Order Summary</h2>
               <div className="order-summary-items">

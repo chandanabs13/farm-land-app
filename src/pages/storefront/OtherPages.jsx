@@ -61,17 +61,17 @@ export function AboutPage() {
             <div className="section-eyebrow">Our values</div>
             <h2 className="section-title">How we farm</h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 24 }}>
+          <div className="feature-grid">
             {[
               { emoji: '🌱', title: 'No Chemicals', desc: 'We do not use synthetic pesticides or fertilisers on any of our produce.' },
               { emoji: '🐄', title: 'Desi Breeds', desc: 'Our ghee is made from A2 milk from native Gir and Sahiwal cows, using the traditional bilona method.' },
               { emoji: '🍯', title: 'Wild Harvest', desc: 'Honey is collected from wild rock bee hives without disturbing the colony — seasonal and limited.' },
               { emoji: '📦', title: 'Packed Fresh', desc: 'Every order is packed the day it ships. We do not hold inventory in warehouses.' },
             ].map(v => (
-              <div key={v.title} style={{ background: '#fff', borderRadius: 'var(--radius-md)', padding: 28, border: '1px solid var(--border)' }}>
-                <div style={{ fontSize: 36, marginBottom: 14 }}>{v.emoji}</div>
-                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 600, marginBottom: 8, color: 'var(--soil)' }}>{v.title}</h3>
-                <p style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6 }}>{v.desc}</p>
+              <div key={v.title} className="feature-card">
+                <div className="farm-card-emoji" style={{ fontSize: 36 }}>{v.emoji}</div>
+                <h3 className="feature-card-title">{v.title}</h3>
+                <p className="feature-card-desc">{v.desc}</p>
               </div>
             ))}
           </div>

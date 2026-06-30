@@ -30,18 +30,13 @@ export default function CartPage() {
   return (
     <div className="checkout-page">
       <div className="container">
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, color: 'var(--soil)', marginBottom: 32 }}>
-          Your Cart
-        </h1>
+        <h1 className="page-title">Your Cart</h1>
 
         <div className="checkout-grid">
           {/* Items */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {cartItems.map(({ product, qty, productId }) => (
-              <div key={productId} style={{
-                display: 'flex', gap: 16, background: '#fff', borderRadius: 'var(--radius-md)',
-                padding: 20, border: '1px solid var(--border)', alignItems: 'center'
-              }}>
+              <div key={productId} className="cart-line-item">
                 <Link to={`/product/${product.id}`}>
                   {product.image
                     ? <img src={product.image} alt={product.name} style={{ width: 80, height: 80, borderRadius: 10, objectFit: 'cover', background: 'var(--cream)' }} />
@@ -64,7 +59,7 @@ export default function CartPage() {
                     </button>
                   </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
+                <div className="cart-line-item-total">
                   <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--forest)' }}>
                     ₹{(product.pricePerKg * qty).toLocaleString('en-IN')}
                   </div>
@@ -74,7 +69,7 @@ export default function CartPage() {
           </div>
 
           {/* Summary */}
-          <div style={{ position: 'sticky', top: 'calc(var(--nav-height) + 20px)' }}>
+          <div className="sticky-summary">
             <div className="order-summary-card">
               <h2 className="card-title">Order Summary</h2>
               <div className="order-summary-items">

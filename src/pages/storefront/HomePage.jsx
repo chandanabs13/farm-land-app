@@ -61,19 +61,17 @@ export default function HomePage() {
             <h2 className="section-title">The farm difference</h2>
             <p className="section-subtitle">We are the farmers. You are the family. There's nothing in between.</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 28 }}>
+          <div className="feature-grid">
             {[
               { icon: <Leaf size={22} />, title: 'Farm to Home', desc: 'Grown on our own land in Coorg and Bangalore — picked, packed, and sent directly to you.' },
               { icon: <Shield size={22} />, title: 'No Additives', desc: 'No preservatives, no artificial flavours, no colours. Just the real thing, as nature intended.' },
               { icon: <Truck size={22} />, title: 'Fresh Dispatch', desc: 'Orders packed the same day and dispatched within 24 hours. Temperature-safe packaging for ghee and honey.' },
               { icon: <Star size={22} />, title: 'Seasonal Honesty', desc: 'Seasonal products like jackfruit are shown only when in season. No false listings, no stale stock.' },
             ].map(({ icon, title, desc }) => (
-              <div key={title} style={{ background: '#fff', borderRadius: 'var(--radius-md)', padding: 28, border: '1px solid var(--border)' }}>
-                <div style={{ width: 48, height: 48, background: 'var(--cream)', borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--forest)', marginBottom: 16 }}>
-                  {icon}
-                </div>
-                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 600, marginBottom: 8, color: 'var(--soil)' }}>{title}</h3>
-                <p style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6 }}>{desc}</p>
+              <div key={title} className="feature-card">
+                <div className="feature-card-icon">{icon}</div>
+                <h3 className="feature-card-title">{title}</h3>
+                <p className="feature-card-desc">{desc}</p>
               </div>
             ))}
           </div>
@@ -104,12 +102,12 @@ export default function HomePage() {
       {/* From the farms */}
       <section className="section section-alt">
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
+          <div className="farm-grid">
             {[
               {
                 emoji: '🌿',
                 title: 'Coorg Estate',
-                subtitle: 'Kodagu District, Karnataka • 1100m altitude',
+                subtitle: 'Kodagu District, Karnataka · 1100m altitude',
                 desc: 'Coffee and pepper vines share space with wild cardamom and native forest birds. The Coorg mist, the altitude, and the volcanic soil — they all show up in the cup.',
                 items: ['Arabica Coffee', 'Black Pepper', 'A2 Desi Ghee', 'Wild Forest Honey'],
               },
@@ -121,12 +119,12 @@ export default function HomePage() {
                 items: ['Guava', 'Jackfruit (seasonal)', 'Chikoo', 'Coconut'],
               },
             ].map(farm => (
-              <div key={farm.title} style={{ background: '#fff', borderRadius: 'var(--radius-lg)', padding: 36, border: '1px solid var(--border)' }}>
-                <div style={{ fontSize: 48, marginBottom: 20 }}>{farm.emoji}</div>
-                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: 'var(--soil)', marginBottom: 4 }}>{farm.title}</h3>
-                <p style={{ fontSize: 12, color: 'var(--moss)', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 16 }}>{farm.subtitle}</p>
-                <p style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: 20 }}>{farm.desc}</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              <div key={farm.title} className="farm-card">
+                <div className="farm-card-emoji">{farm.emoji}</div>
+                <h3 className="farm-card-title">{farm.title}</h3>
+                <p className="farm-card-subtitle">{farm.subtitle}</p>
+                <p className="farm-card-desc">{farm.desc}</p>
+                <div className="farm-card-tags">
                   {farm.items.map(item => <span key={item} className="tag">{item}</span>)}
                 </div>
               </div>

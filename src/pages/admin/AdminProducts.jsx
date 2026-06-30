@@ -29,6 +29,7 @@ export default function AdminProducts() {
       </div>
 
       <div className="admin-table-wrap">
+        <div className="table-scroll">
         <table>
           <thead>
             <tr>
@@ -87,6 +88,7 @@ export default function AdminProducts() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Product form modal */}

@@ -109,38 +109,13 @@ export default function AdminOrders() {
             <div key={order.id} className="admin-table-wrap">
               {/* Order header row */}
               <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "16px 20px",
-                  cursor: "pointer",
-                  gap: 12,
-                  flexWrap: "wrap",
-                }}
+                className="order-row-header"
                 onClick={() =>
                   setExpandedId(expandedId === order.id ? null : order.id)
                 }
               >
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 16,
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                    flex: 1,
-                  }}
-                >
-                  <span
-                    style={{
-                      fontFamily: "monospace",
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: "var(--forest)",
-                    }}
-                  >
-                    {order.id}
-                  </span>
+                <div className="order-row-meta">
+                  <span className="order-row-id">{order.id}</span>
                   <span style={{ fontWeight: 600 }}>
                     {order.customer.firstName} {order.customer.lastName}
                   </span>
@@ -159,10 +134,9 @@ export default function AdminOrders() {
                     })}
                   </span>
                 </div>
-                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <div className="order-row-actions">
                   <select
-                    className="form-select"
-                    style={{ width: "auto", fontSize: 13, padding: "6px 10px" }}
+                    className="form-select order-status-select"
                     value={order.status}
                     onClick={(e) => e.stopPropagation()}
                     onChange={(e) => handleStatusChange(order, e.target.value)}
@@ -174,7 +148,7 @@ export default function AdminOrders() {
                     ))}
                   </select>
                   <span
-                    className={`order-status-badge ${
+                    className={`order-status-badge order-status-badge-dup ${
                       statusColors[order.status]
                     }`}
                   >
@@ -204,15 +178,7 @@ export default function AdminOrders() {
 
               {/* Expanded detail */}
               {expandedId === order.id && (
-                <div
-                  style={{
-                    borderTop: "1px solid var(--border)",
-                    padding: "20px",
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: 32,
-                  }}
-                >
+                <div className="order-detail-grid">
                   {/* Customer info */}
                   <div>
                     <h4

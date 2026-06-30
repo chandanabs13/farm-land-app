@@ -48,6 +48,7 @@ export default function AdminDashboard() {
             <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>No orders yet. They'll appear here once customers place orders.</p>
           </div>
         ) : (
+          <div className="table-scroll">
           <table>
             <thead>
               <tr>
@@ -78,6 +79,7 @@ export default function AdminDashboard() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>
