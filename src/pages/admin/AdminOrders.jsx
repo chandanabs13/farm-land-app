@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Phone, Mail, MapPin } from "lucide-react";
+import { ChevronDown, ChevronUp, Phone, Mail, MapPin, Trash2 } from "lucide-react";
 import { useStore } from "../../context/StoreContext";
+import { useAdminAuth } from "../../context/AdminAuthContext";
 
 const STATUS_OPTIONS = ["pending", "confirmed", "delivered", "cancelled"];
 const statusColors = {
@@ -12,13 +13,54 @@ const statusColors = {
 
 export default function AdminOrders() {
   const { state, actions } = useStore();
+  const { token } = useAdminAuth();
   const [expandedId, setExpandedId] = useState(null);
   const [filter, setFilter] = useState("all");
+  const [deletingId, setDeletingId] = useState(null);
 
   const filtered =
     filter === "all"
       ? state.orders
       : state.orders.filter((o) => o.status === filter);
+
+  const handleStatusChange = async (order, status) => {
+    try {
+      await actions.updateOrderStatus(order.id, status, token);
+      actions.toast(`Order ${order.id} marked as ${status}`);
+      if (status === "delivered") {
+        actions.toast("Order delivered — you can delete it when done", "success");
+      }
+    } catch {
+      actions.toast("Could not update order status", "error");
+    }
+  };
+
+  const handleDelete = async (order) => {
+    const msg =
+      order.status === "delivered"
+        ? `Delete order ${order.id}? This will permanently remove it from your records.`
+        : `Delete order ${order.id}? Only delete if cancelled or no longer needed.`;
+    if (!window.confirm(msg)) return;
+
+    setDeletingId(order.id);
+    try {
+      await actions.deleteOrder(order.id, token);
+      actions.toast(`Order ${order.id} deleted`);
+      if (expandedId === order.id) setExpandedId(null);
+    } catch {
+      actions.toast("Could not delete order", "error");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  if (state.ordersLoading) {
+    return (
+      <div className="admin-page-header">
+        <p className="admin-page-subtitle">Loading orders...</p>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -123,12 +165,7 @@ export default function AdminOrders() {
                     style={{ width: "auto", fontSize: 13, padding: "6px 10px" }}
                     value={order.status}
                     onClick={(e) => e.stopPropagation()}
-                    onChange={(e) => {
-                      actions.updateOrderStatus(order.id, e.target.value);
-                      actions.toast(
-                        `Order ${order.id} marked as ${e.target.value}`
-                      );
-                    }}
+                    onChange={(e) => handleStatusChange(order, e.target.value)}
                   >
                     {STATUS_OPTIONS.map((s) => (
                       <option key={s} value={s}>
@@ -144,6 +181,19 @@ export default function AdminOrders() {
                     {order.status.charAt(0).toUpperCase() +
                       order.status.slice(1)}
                   </span>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-secondary"
+                    title="Delete order (admin only)"
+                    disabled={deletingId === order.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(order);
+                    }}
+                    style={{ padding: "6px 10px", color: "var(--error, #c62828)" }}
+                  >
+                    <Trash2 size={14} />
+                  </button>
                   {expandedId === order.id ? (
                     <ChevronUp size={16} />
                   ) : (

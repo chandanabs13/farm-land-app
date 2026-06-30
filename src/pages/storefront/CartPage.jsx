@@ -1,10 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, ArrowRight, ShoppingBag } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export default function CartPage() {
   const { state, computed, actions } = useStore();
   const navigate = useNavigate();
+  usePageMeta({ title: 'Cart', noIndex: true });
 
   const cartItems = state.cart.map(item => ({
     ...item,

@@ -1,41 +1,72 @@
 # Coorg Farms Store
 
-## Quick Start
+## Quick Start (local)
 ```bash
 npm install
+cp .env.example .env   # add your Supabase keys
 npm run dev
 ```
 Open http://localhost:5173
 
 ## Deploy to Vercel
-1. Push to GitHub
-2. Import in vercel.com → auto-detected as Vite
-3. Done!
+
+1. Push code to GitHub
+2. Import project at [vercel.com](https://vercel.com) → connect repo
+3. Vercel auto-detects Vite — no extra build settings needed
+4. Add **Environment Variables** in Vercel → Settings → Environment Variables:
+
+| Variable | Value |
+|----------|-------|
+| `SUPABASE_URL` | `https://xxxxx.supabase.co` (no `/rest/v1/`) |
+| `SUPABASE_SERVICE_ROLE_KEY` | service_role key from Supabase |
+| `ADMIN_PASSWORD` | your admin password |
+| `ADMIN_SECRET` | random secret string |
+
+5. Deploy → your site is live at `https://your-app.vercel.app`
+6. Update `public/sitemap.xml` and `public/robots.txt` with your real Vercel URL
+7. Submit sitemap in [Google Search Console](https://search.google.com/search-console)
+
+Orders API runs as Vercel serverless functions in `/api` — no separate server needed.
+
+## Supabase setup (one-time)
+
+1. Create project at [supabase.com](https://supabase.com)
+2. Create `orders` table with columns:
+
+| Column | Type |
+|--------|------|
+| `id` | text (primary key) |
+| `customer` | jsonb |
+| `items` | jsonb |
+| `subtotal` | numeric |
+| `shipping` | numeric |
+| `total` | numeric |
+| `status` | text |
+| `created_at` | timestamptz |
+| `updated_at` | timestamptz (optional) |
+
+Run `supabase/schema.sql` in SQL Editor if needed.
 
 ## Admin Panel
-Go to `/admin` — no login required (add auth when ready).
+Go to `/admin` → log in → manage orders and products.
 
-## Features
-- Product catalog with category filter
-- Add/Edit/Delete products (admin only)
-- Toggle seasonal availability (product hidden when unavailable)
-- Upload product images (stored as base64)
-- Cart with quantity control
-- Checkout with customer details
-- Order management with status tracking (Pending → Confirmed → Delivered)
-- Fully responsive (mobile + desktop)
-- All data in localStorage (swap to Firebase/Supabase for production)
+**Order workflow:** Pending → Confirmed → Delivered → Delete (trash icon)
+
+## SEO included
+- Meta title & description per page
+- Open Graph + Twitter cards
+- `robots.txt` + `sitemap.xml`
+- JSON-LD store schema on homepage
+- Admin/cart/checkout hidden from search engines (`noindex`)
 
 ## Folder Structure
 ```
+api/               # Vercel serverless (orders API)
+server/            # Local dev Express server
+supabase/          # schema.sql
+public/            # robots.txt, sitemap.xml, favicon
 src/
-  components/
-    admin/         # ProductFormModal
-    shared/        # Navbar, Footer, ToastContainer
-    storefront/    # ProductCard
-  context/         # StoreContext (products, cart, orders)
-  data/            # initialProducts seed data
-  pages/
-    admin/         # Dashboard, Products, Orders
-    storefront/    # Home, Shop, Product, Cart, Checkout
+  hooks/           # usePageMeta (SEO)
+  api/             # frontend API client
+  pages/           # storefront + admin
 ```

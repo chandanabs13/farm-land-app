@@ -1,7 +1,7 @@
-import { createContext, useContext, useReducer, useEffect } from 'react';
+import { createContext, useContext, useReducer } from 'react';
 import { INITIAL_PRODUCTS } from '../data/initialProducts';
+import * as ordersApi from '../api/orders';
 
-// ─── helpers ────────────────────────────────────────────────────────────────
 const load = (key, fallback) => {
   try {
     const raw = localStorage.getItem(key);
@@ -14,18 +14,17 @@ const save = (key, value) => {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
 };
 
-// ─── initial state ───────────────────────────────────────────────────────────
 const initialState = {
   products: load('coorg_products', INITIAL_PRODUCTS),
   cart: load('coorg_cart', []),
-  orders: load('coorg_orders', []),
+  orders: [],
+  ordersLoading: false,
+  lastOrderId: null,
   toasts: [],
 };
 
-// ─── reducer ─────────────────────────────────────────────────────────────────
 function reducer(state, action) {
   switch (action.type) {
-    // PRODUCTS
     case 'ADD_PRODUCT': {
       const products = [...state.products, { ...action.payload, id: Date.now().toString(), createdAt: new Date().toISOString() }];
       save('coorg_products', products);
@@ -47,7 +46,6 @@ function reducer(state, action) {
       return { ...state, products };
     }
 
-    // CART
     case 'ADD_TO_CART': {
       const existing = state.cart.find(i => i.productId === action.payload.productId);
       const cart = existing
@@ -73,46 +71,42 @@ function reducer(state, action) {
       return { ...state, cart: [] };
     }
 
-    // ORDERS
-    case 'PLACE_ORDER': {
-      const order = {
-        ...action.payload,
-        id: `ORD-${Date.now()}`,
-        status: 'pending',
-        createdAt: new Date().toISOString(),
+    case 'SET_ORDERS_LOADING':
+      return { ...state, ordersLoading: action.payload };
+    case 'SET_ORDERS':
+      return { ...state, orders: action.payload, ordersLoading: false };
+    case 'ADD_ORDER':
+      return { ...state, orders: [action.payload, ...state.orders], lastOrderId: action.payload.id };
+    case 'UPDATE_ORDER':
+      return {
+        ...state,
+        orders: state.orders.map(o => o.id === action.payload.id ? action.payload : o),
       };
-      const orders = [order, ...state.orders];
-      save('coorg_orders', orders);
-      return { ...state, orders, cart: [], lastOrderId: order.id };
-    }
-    case 'UPDATE_ORDER_STATUS': {
-      const orders = state.orders.map(o => o.id === action.payload.id ? { ...o, status: action.payload.status } : o);
-      save('coorg_orders', orders);
-      return { ...state, orders };
-    }
+    case 'REMOVE_ORDER':
+      return { ...state, orders: state.orders.filter(o => o.id !== action.payload) };
 
-    // TOASTS
     case 'ADD_TOAST': {
       const toast = { id: Date.now(), ...action.payload };
       return { ...state, toasts: [...state.toasts, toast] };
     }
-    case 'REMOVE_TOAST': {
+    case 'REMOVE_TOAST':
       return { ...state, toasts: state.toasts.filter(t => t.id !== action.payload) };
-    }
-
-    case 'SET_LAST_ORDER_ID':
-      return { ...state, lastOrderId: action.payload };
 
     default:
       return state;
   }
 }
 
-// ─── context ─────────────────────────────────────────────────────────────────
 const StoreContext = createContext(null);
 
 export function StoreProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  const toast = (message, type = 'success') => {
+    const id = Date.now();
+    dispatch({ type: 'ADD_TOAST', payload: { message, type, id } });
+    setTimeout(() => dispatch({ type: 'REMOVE_TOAST', payload: id }), 3200);
+  };
 
   const actions = {
     addProduct: (p) => dispatch({ type: 'ADD_PRODUCT', payload: p }),
@@ -125,14 +119,36 @@ export function StoreProvider({ children }) {
     removeFromCart: (productId) => dispatch({ type: 'REMOVE_FROM_CART', payload: productId }),
     clearCart: () => dispatch({ type: 'CLEAR_CART' }),
 
-    placeOrder: (orderData) => dispatch({ type: 'PLACE_ORDER', payload: orderData }),
-    updateOrderStatus: (id, status) => dispatch({ type: 'UPDATE_ORDER_STATUS', payload: { id, status } }),
-
-    toast: (message, type = 'success') => {
-      const id = Date.now();
-      dispatch({ type: 'ADD_TOAST', payload: { message, type, id } });
-      setTimeout(() => dispatch({ type: 'REMOVE_TOAST', payload: id }), 3200);
+    fetchOrders: async (token) => {
+      dispatch({ type: 'SET_ORDERS_LOADING', payload: true });
+      try {
+        const orders = await ordersApi.fetchOrders(token);
+        dispatch({ type: 'SET_ORDERS', payload: orders });
+      } catch {
+        dispatch({ type: 'SET_ORDERS', payload: [] });
+        toast('Could not load orders. Is the server running?', 'error');
+      }
     },
+
+    placeOrder: async (orderData) => {
+      const order = await ordersApi.createOrder(orderData);
+      dispatch({ type: 'ADD_ORDER', payload: order });
+      dispatch({ type: 'CLEAR_CART' });
+      return order;
+    },
+
+    updateOrderStatus: async (id, status, token) => {
+      const updated = await ordersApi.updateOrderStatus(id, status, token);
+      dispatch({ type: 'UPDATE_ORDER', payload: updated });
+      return updated;
+    },
+
+    deleteOrder: async (id, token) => {
+      await ordersApi.deleteOrder(id, token);
+      dispatch({ type: 'REMOVE_ORDER', payload: id });
+    },
+
+    toast,
   };
 
   const computed = {

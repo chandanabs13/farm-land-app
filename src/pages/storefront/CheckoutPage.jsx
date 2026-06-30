@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useStore } from "../../context/StoreContext";
+import { usePageMeta } from "../../hooks/usePageMeta";
 
 // Defined OUTSIDE CheckoutPage so it's not re-created on every render —
 // that's what was causing the input to lose focus after each keystroke.
@@ -17,6 +18,7 @@ function Field({ label, error, ...inputProps }) {
 export default function CheckoutPage() {
   const { state, computed, actions } = useStore();
   const navigate = useNavigate();
+  usePageMeta({ title: 'Checkout', noIndex: true });
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -57,7 +59,7 @@ export default function CheckoutPage() {
     return !Object.keys(e).length;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validate()) return;
     setSubmitting(true);
     const order = {
@@ -74,11 +76,13 @@ export default function CheckoutPage() {
       shipping,
       total: grandTotal,
     };
-    setTimeout(() => {
-      actions.placeOrder(order);
-      actions.clearCart();
+    try {
+      await actions.placeOrder(order);
       navigate("/order-success");
-    }, 600);
+    } catch {
+      actions.toast("Could not place order. Please try again.", "error");
+      setSubmitting(false);
+    }
   };
 
   if (cartItems.length === 0)

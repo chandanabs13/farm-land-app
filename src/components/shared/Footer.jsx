@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Leaf, MapPin, Phone, Mail } from 'lucide-react';
+import { Leaf, MapPin } from 'lucide-react';
 
 export default function Footer() {
   return (

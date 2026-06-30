@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { MapPin, ShoppingCart, ArrowLeft, ChevronRight } from 'lucide-react';
+import { MapPin, ShoppingCart, ChevronRight } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -10,6 +11,11 @@ export default function ProductDetailPage() {
   const [qty, setQty] = useState(1);
 
   const product = state.products.find(p => p.id === id);
+  usePageMeta(
+    product
+      ? { title: product.name, description: product.description }
+      : { title: 'Product Not Found', noIndex: true }
+  );
 
   if (!product) return (
     <div className="container section">

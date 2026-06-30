@@ -1,57 +1,56 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import * as ordersApi from '../api/orders';
 
-// ─── Set your admin password here ───────────────────────────────────────────
-// Change this to whatever you and your husband want to use.
-const ADMIN_PASSWORD = 'CoorgFarm@2026';
-
-// Session expires after this many hours of inactivity
-const SESSION_HOURS = 12;
-
-const AuthContext = createContext(null);
+const SESSION_KEY = 'coorg_admin_session';
 
 function loadSession() {
   try {
-    const raw = localStorage.getItem('coorg_admin_session');
-    if (!raw) return false;
-    const { expiresAt } = JSON.parse(raw);
-    if (Date.now() > expiresAt) {
-      localStorage.removeItem('coorg_admin_session');
-      return false;
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const { token, expiresAt } = JSON.parse(raw);
+    if (!token || Date.now() > expiresAt) {
+      localStorage.removeItem(SESSION_KEY);
+      return null;
     }
-    return true;
+    return token;
   } catch {
-    return false;
+    return null;
   }
 }
 
-export function AdminAuthProvider({ children }) {
-  const [isAuthed, setIsAuthed] = useState(loadSession());
+const AuthContext = createContext(null);
 
-  const login = (password) => {
-    if (password === ADMIN_PASSWORD) {
-      const expiresAt = Date.now() + SESSION_HOURS * 60 * 60 * 1000;
-      localStorage.setItem('coorg_admin_session', JSON.stringify({ expiresAt }));
-      setIsAuthed(true);
+export function AdminAuthProvider({ children }) {
+  const [token, setToken] = useState(loadSession);
+
+  const login = async (password) => {
+    try {
+      const { token: newToken } = await ordersApi.loginAdmin(password);
+      const expiresAt = Date.now() + 12 * 60 * 60 * 1000;
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ token: newToken, expiresAt }));
+      setToken(newToken);
       return true;
+    } catch {
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
-    localStorage.removeItem('coorg_admin_session');
-    setIsAuthed(false);
+    localStorage.removeItem(SESSION_KEY);
+    setToken(null);
   };
 
-  // Re-check session validity on mount and periodically
+  const getToken = useCallback(() => token, [token]);
+
   useEffect(() => {
     const interval = setInterval(() => {
-      if (!loadSession()) setIsAuthed(false);
+      if (!loadSession()) setToken(null);
     }, 60000);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthed, login, logout }}>
+    <AuthContext.Provider value={{ isAuthed: !!token, token, login, logout, getToken }}>
       {children}
     </AuthContext.Provider>
   );

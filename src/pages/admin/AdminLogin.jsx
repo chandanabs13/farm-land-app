@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { Lock, Leaf } from 'lucide-react';
 import { useAdminAuth } from '../../context/AdminAuthContext';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export default function AdminLogin() {
   const { isAuthed, login } = useAdminAuth();
+  usePageMeta({ title: 'Admin Login', noIndex: true });
   const location = useLocation();
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -14,9 +16,10 @@ export default function AdminLogin() {
     return <Navigate to={from} replace />;
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (login(password)) {
+    const ok = await login(password);
+    if (ok) {
       setError('');
     } else {
       setError('Incorrect password. Try again.');

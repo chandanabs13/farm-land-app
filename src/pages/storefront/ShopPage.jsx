@@ -1,12 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import ProductCard from '../../components/storefront/ProductCard';
 import { CATEGORIES } from '../../data/initialProducts';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export default function ShopPage() {
   const { computed } = useStore();
+  usePageMeta({
+    title: 'Shop',
+    description: 'Browse farm-fresh coffee, pepper, ghee, honey and seasonal fruits from Coorg and Bangalore.',
+  });
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState(searchParams.get('cat') || 'All');

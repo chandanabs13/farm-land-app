@@ -1,7 +1,10 @@
+import { useEffect } from 'react';
 import { NavLink, Outlet, Navigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Package, ShoppingBag, LogOut } from 'lucide-react';
 import Navbar from '../../components/shared/Navbar';
 import { useAdminAuth } from '../../context/AdminAuthContext';
+import { useStore } from '../../context/StoreContext';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 const NAV_ITEMS = [
   { to: '/admin', icon: <LayoutDashboard size={18} />, label: 'Dashboard', end: true },
@@ -10,8 +13,14 @@ const NAV_ITEMS = [
 ];
 
 export default function AdminLayout() {
-  const { isAuthed, logout } = useAdminAuth();
+  const { isAuthed, logout, token } = useAdminAuth();
+  const { actions } = useStore();
   const location = useLocation();
+  usePageMeta({ title: 'Admin', noIndex: true });
+
+  useEffect(() => {
+    if (isAuthed && token) actions.fetchOrders(token);
+  }, [isAuthed, token]);
 
   if (!isAuthed) {
     return <Navigate to="/admin/login" state={{ from: location.pathname }} replace />;

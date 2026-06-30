@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Replace your-site.vercel.app with your real Vercel URL after deploy -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://farm-land-app.vercel.app/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://farm-land-app.vercel.app/shop</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://farm-land-app.vercel.app/about</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://farm-land-app.vercel.app/product/1</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://farm-land-app.vercel.app/product/2</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://farm-land-app.vercel.app/product/3</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://farm-land-app.vercel.app/product/4</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://farm-land-app.vercel.app/product/5</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://farm-land-app.vercel.app/product/6</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://farm-land-app.vercel.app/product/7</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://farm-land-app.vercel.app/product/8</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+</urlset>

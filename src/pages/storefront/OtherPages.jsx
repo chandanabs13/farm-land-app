@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
-import { CheckCircle } from 'lucide-react';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export function OrderSuccessPage() {
+  usePageMeta({ title: 'Order Placed', noIndex: true });
   return (
     <div className="success-page container">
       <div className="success-card">
@@ -24,6 +25,11 @@ export function OrderSuccessPage() {
 }
 
 export function AboutPage() {
+  usePageMeta({
+    title: 'Our Farm',
+    description: 'Learn about our Coorg estate and Bangalore orchard — two farms, one family, real food with no middlemen.',
+  });
+
   return (
     <div>
       <section className="hero" style={{ minHeight: 360 }}>

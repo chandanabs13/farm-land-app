@@ -2,9 +2,13 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Leaf, Shield, Truck, Star } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import ProductCard from '../../components/storefront/ProductCard';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export default function HomePage() {
   const { computed, state } = useStore();
+  usePageMeta({
+    description: 'Farm-fresh coffee, pepper, ghee, honey and fruits from Coorg and Bangalore. Grown by our family, delivered to your home.',
+  });
 
   return (
     <>

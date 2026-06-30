@@ -5,7 +5,6 @@ import { useStore } from '../../context/StoreContext';
 
 export default function Navbar({ isAdmin }) {
   const { computed } = useStore();
-  const [cartOpen, setCartOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
