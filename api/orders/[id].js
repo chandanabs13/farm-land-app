@@ -1,5 +1,6 @@
 import { updateOrderStatus, deleteOrder } from '../../lib/db.js';
 import { requireAdmin } from '../../lib/auth.js';
+import { parseBody } from '../../lib/parseBody.js';
 
 function formatError(err) {
   console.error('API error:', err.message, err.code, err.hint);
@@ -17,7 +18,7 @@ export default async function handler(req, res) {
   const { id } = req.query;
 
   if (req.method === 'PATCH') {
-    const { status } = req.body || {};
+    const { status } = parseBody(req);
     const allowed = ['pending', 'confirmed', 'delivered', 'cancelled'];
     if (!allowed.includes(status)) {
       return res.status(400).json({ error: 'Invalid status' });

@@ -1,5 +1,6 @@
 import { readOrders, insertOrder } from '../lib/db.js';
 import { requireAdmin } from '../lib/auth.js';
+import { parseBody } from '../lib/parseBody.js';
 
 function formatError(err) {
   console.error('API error:', err.message, err.code, err.hint);
@@ -24,7 +25,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    const { customer, items, subtotal, shipping, total } = req.body || {};
+    const { customer, items, subtotal, shipping, total } = parseBody(req);
     if (!customer?.email || !items?.length || total == null) {
       return res.status(400).json({ error: 'Invalid order data' });
     }
