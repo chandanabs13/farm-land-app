@@ -3,8 +3,8 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { readOrders, insertOrder, updateOrderStatus, deleteOrder } from './db.js';
-import { createToken, verifyToken, verifyPassword } from './auth.js';
+import { readOrders, insertOrder, updateOrderStatus, deleteOrder } from '../lib/db.js';
+import { createToken, verifyToken, verifyPassword, requireAdmin } from '../lib/auth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -13,12 +13,9 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 
-function requireAdmin(req, res, next) {
-  const auth = req.headers.authorization || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-  if (!verifyToken(token)) {
-    return res.status(401).json({ error: 'Admin access required' });
-  }
+function requireAdminMiddleware(req, res, next) {
+  const denied = requireAdmin(req);
+  if (denied) return res.status(denied.status).json({ error: denied.error });
   next();
 }
 
@@ -58,7 +55,7 @@ app.post('/api/admin/login', (req, res) => {
 });
 
 // ─── Admin: list orders ──────────────────────────────────────────────────────
-app.get('/api/orders', requireAdmin, async (_req, res) => {
+app.get('/api/orders', requireAdminMiddleware, async (_req, res) => {
   try {
     const orders = await readOrders();
     res.json(orders);
@@ -69,7 +66,7 @@ app.get('/api/orders', requireAdmin, async (_req, res) => {
 });
 
 // ─── Admin: update status ────────────────────────────────────────────────────
-app.patch('/api/orders/:id', requireAdmin, async (req, res) => {
+app.patch('/api/orders/:id', requireAdminMiddleware, async (req, res) => {
   try {
     const { status } = req.body;
     const allowed = ['pending', 'confirmed', 'delivered', 'cancelled'];
@@ -88,7 +85,7 @@ app.patch('/api/orders/:id', requireAdmin, async (req, res) => {
 });
 
 // ─── Admin: delete order ─────────────────────────────────────────────────────
-app.delete('/api/orders/:id', requireAdmin, async (req, res) => {
+app.delete('/api/orders/:id', requireAdminMiddleware, async (req, res) => {
   try {
     const removed = await deleteOrder(req.params.id);
     if (!removed) return res.status(404).json({ error: 'Order not found' });
