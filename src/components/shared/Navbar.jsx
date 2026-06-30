@@ -35,11 +35,6 @@ export default function Navbar({ isAdmin }) {
               <li><NavLink to="/" end onClick={() => setMenuOpen(false)}>Home</NavLink></li>
               <li><NavLink to="/shop" onClick={() => setMenuOpen(false)}>Shop</NavLink></li>
               <li><NavLink to="/about" onClick={() => setMenuOpen(false)}>Our Farm</NavLink></li>
-              <li>
-                <NavLink to="/admin" style={{ color: 'var(--amber-light)', fontWeight: 600 }} onClick={() => setMenuOpen(false)}>
-                  Admin
-                </NavLink>
-              </li>
             </ul>
 
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>

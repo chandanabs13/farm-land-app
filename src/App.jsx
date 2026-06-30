@@ -11,6 +11,7 @@ import { OrderSuccessPage, AboutPage } from './pages/storefront/OtherPages';
 
 // Admin
 import AdminLayout from './pages/admin/AdminLayout';
+import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminOrders from './pages/admin/AdminOrders';
@@ -34,6 +35,7 @@ export default function App() {
         </Route>
 
         {/* Admin */}
+        <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="products" element={<AdminProducts />} />

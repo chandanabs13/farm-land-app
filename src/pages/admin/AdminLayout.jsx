@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { NavLink, Outlet, Navigate, useLocation } from 'react-router-dom';
+import { LayoutDashboard, Package, ShoppingBag, LogOut } from 'lucide-react';
 import Navbar from '../../components/shared/Navbar';
+import { useAdminAuth } from '../../context/AdminAuthContext';
 
 const NAV_ITEMS = [
   { to: '/admin', icon: <LayoutDashboard size={18} />, label: 'Dashboard', end: true },
@@ -10,6 +10,13 @@ const NAV_ITEMS = [
 ];
 
 export default function AdminLayout() {
+  const { isAuthed, logout } = useAdminAuth();
+  const location = useLocation();
+
+  if (!isAuthed) {
+    return <Navigate to="/admin/login" state={{ from: location.pathname }} replace />;
+  }
+
   return (
     <>
       <Navbar isAdmin />
@@ -45,6 +52,14 @@ export default function AdminLayout() {
               {icon} {label}
             </NavLink>
           ))}
+          <div style={{ flex: 1 }} />
+          <button
+            className="admin-nav-item"
+            onClick={logout}
+            style={{ color: 'rgba(255,255,255,0.5)', marginTop: 12, borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 18 }}
+          >
+            <LogOut size={18} /> Log Out
+          </button>
         </aside>
 
         {/* Main content */}
