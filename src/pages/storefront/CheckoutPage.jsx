@@ -34,7 +34,7 @@ export default function CheckoutPage() {
   const cartItems = state.cart
     .map((item) => ({
       ...item,
-      product: state.products.find((p) => p.id === item.productgitId),
+      product: state.products.find((p) => p.id === item.productId),
     }))
     .filter((i) => i.product);
 
