@@ -9,8 +9,8 @@ export function OrderSuccessPage() {
         <div className="success-icon">✅</div>
         <h1 className="success-title">Order Placed!</h1>
         <p className="success-subtitle">
-          Thank you for your order. We'll give you a call to confirm and arrange delivery.
-          Expect fresh produce at your doorstep within 2–3 days.
+          Thank you! We&apos;ll call you to confirm. Collect your order at your tower lobby,
+          or we&apos;ll deliver to your flat if you chose home delivery (+₹10).
         </p>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
           <Link to="/shop" className="btn btn-primary">Continue Shopping</Link>

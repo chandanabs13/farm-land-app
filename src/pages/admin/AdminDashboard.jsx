@@ -1,5 +1,6 @@
 import { Package, ShoppingBag, TrendingUp, Clock } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
+import { customerName } from '../../utils/customer';
 
 export default function AdminDashboard() {
   const { state, computed } = useStore();
@@ -64,7 +65,7 @@ export default function AdminDashboard() {
               {recentOrders.map(order => (
                 <tr key={order.id}>
                   <td style={{ fontWeight: 600, fontFamily: 'monospace', fontSize: 12 }}>{order.id}</td>
-                  <td>{order.customer.firstName} {order.customer.lastName}</td>
+                  <td>{customerName(order.customer)}</td>
                   <td style={{ color: 'var(--text-muted)' }}>{order.items.length} item{order.items.length !== 1 ? 's' : ''}</td>
                   <td style={{ fontWeight: 600 }}>₹{order.total.toLocaleString('en-IN')}</td>
                   <td>

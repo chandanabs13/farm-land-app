@@ -2,13 +2,16 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useStore } from "../../context/StoreContext";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import SearchSelect from "../../components/storefront/SearchSelect";
+import { TOWERS, FLATS, HOME_DELIVERY_FEE } from "../../data/communityUnits";
 
-// Defined OUTSIDE CheckoutPage so it's not re-created on every render —
-// that's what was causing the input to lose focus after each keystroke.
-function Field({ label, error, ...inputProps }) {
+function Field({ label, error, optional, ...inputProps }) {
   return (
     <div className="form-group">
-      <label className="form-label">{label} *</label>
+      <label className="form-label">
+        {label}
+        {optional ? " (optional)" : " *"}
+      </label>
       <input className="form-input" {...inputProps} />
       {error && <span className="form-error">{error}</span>}
     </div>
@@ -18,16 +21,14 @@ function Field({ label, error, ...inputProps }) {
 export default function CheckoutPage() {
   const { state, computed, actions } = useStore();
   const navigate = useNavigate();
-  usePageMeta({ title: 'Checkout', noIndex: true });
+  usePageMeta({ title: "Checkout", noIndex: true });
+
   const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
+    name: "",
     phone: "",
-    address: "",
-    city: "",
-    state: "",
-    pincode: "",
+    tower: "",
+    flat: "",
+    deliveryType: "pickup",
     notes: "",
   });
   const [errors, setErrors] = useState({});
@@ -40,21 +41,17 @@ export default function CheckoutPage() {
     }))
     .filter((i) => i.product);
 
-  const shipping = computed.cartTotal >= 1000 ? 0 : 99;
-  const grandTotal = computed.cartTotal + shipping;
+  const deliveryFee = form.deliveryType === "home" ? HOME_DELIVERY_FEE : 0;
+  const grandTotal = computed.cartTotal + deliveryFee;
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
   const validate = () => {
     const e = {};
-    if (!form.firstName.trim()) e.firstName = "Required";
-    if (!form.lastName.trim()) e.lastName = "Required";
-    if (!form.email.includes("@")) e.email = "Valid email required";
-    if (form.phone.length < 10) e.phone = "Valid phone required";
-    if (!form.address.trim()) e.address = "Required";
-    if (!form.city.trim()) e.city = "Required";
-    if (!form.state.trim()) e.state = "Required";
-    if (form.pincode.length < 6) e.pincode = "Valid pincode required";
+    if (!form.name.trim()) e.name = "Required";
+    if (form.phone.replace(/\D/g, "").length < 10) e.phone = "Valid phone required";
+    if (!form.tower) e.tower = "Select your tower";
+    if (!form.flat) e.flat = "Select your flat";
     setErrors(e);
     return !Object.keys(e).length;
   };
@@ -73,7 +70,7 @@ export default function CheckoutPage() {
         total: product.pricePerKg * qty,
       })),
       subtotal: computed.cartTotal,
-      shipping,
+      shipping: deliveryFee,
       total: grandTotal,
     };
     try {
@@ -105,98 +102,55 @@ export default function CheckoutPage() {
 
         <div className="checkout-grid">
           <div className="checkout-form-card">
-            <h2 className="card-title">Delivery Details</h2>
+            <h2 className="card-title">Your details</h2>
+            <p className="checkout-community-note">Community orders only — we deliver within our apartment complex.</p>
+
             <div className="form-section">
+              <Field label="Name" placeholder="Your full name" value={form.name} onChange={(e) => set("name", e.target.value)} error={errors.name} />
+              <Field label="Phone" placeholder="9876543210" type="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} error={errors.phone} />
+
               <div className="form-row">
-                <Field
-                  label="First Name"
-                  placeholder="Ravi"
-                  value={form.firstName}
-                  onChange={(e) => set("firstName", e.target.value)}
-                  error={errors.firstName}
-                />
-                <Field
-                  label="Last Name"
-                  placeholder="Kumar"
-                  value={form.lastName}
-                  onChange={(e) => set("lastName", e.target.value)}
-                  error={errors.lastName}
-                />
+                <SearchSelect label="Tower" placeholder="Type tower number…" options={TOWERS} value={form.tower} onChange={(v) => set("tower", v)} error={errors.tower} />
+                <SearchSelect label="Flat" placeholder="Type flat number…" options={FLATS} value={form.flat} onChange={(v) => set("flat", v)} error={errors.flat} />
               </div>
-              <div className="form-row">
-                <Field
-                  label="Email"
-                  placeholder="ravi@example.com"
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => set("email", e.target.value)}
-                  error={errors.email}
-                />
-                <Field
-                  label="Phone"
-                  placeholder="9876543210"
-                  type="tel"
-                  value={form.phone}
-                  onChange={(e) => set("phone", e.target.value)}
-                  error={errors.phone}
-                />
-              </div>
-              <Field
-                label="Address"
-                placeholder="123, 4th Main, Indiranagar"
-                value={form.address}
-                onChange={(e) => set("address", e.target.value)}
-                error={errors.address}
-              />
-              <div className="form-row">
-                <Field
-                  label="City"
-                  placeholder="Bangalore"
-                  value={form.city}
-                  onChange={(e) => set("city", e.target.value)}
-                  error={errors.city}
-                />
-                <Field
-                  label="State"
-                  placeholder="Karnataka"
-                  value={form.state}
-                  onChange={(e) => set("state", e.target.value)}
-                  error={errors.state}
-                />
-              </div>
-              <Field
-                label="Pincode"
-                placeholder="560038"
-                value={form.pincode}
-                onChange={(e) => set("pincode", e.target.value)}
-                error={errors.pincode}
-              />
+
               <div className="form-group">
-                <label className="form-label">Order Notes (optional)</label>
-                <textarea
-                  className="form-textarea"
-                  rows={3}
-                  placeholder="Any special instructions for delivery..."
-                  value={form.notes}
-                  onChange={(e) => set("notes", e.target.value)}
-                />
+                <label className="form-label">How do you want your order? *</label>
+                <div className="delivery-options">
+                  <label className={`delivery-option${form.deliveryType === "pickup" ? " selected" : ""}`}>
+                    <input type="radio" name="deliveryType" value="pickup" checked={form.deliveryType === "pickup"} onChange={() => set("deliveryType", "pickup")} />
+                    <span>
+                      <strong>Pickup at tower lobby</strong>
+                      <small>Free — collect at Tower 1,601</small>
+                    </span>
+                  </label>
+                  <label className={`delivery-option${form.deliveryType === "home" ? " selected" : ""}`}>
+                    <input type="radio" name="deliveryType" value="home" checked={form.deliveryType === "home"} onChange={() => set("deliveryType", "home")} />
+                    <span>
+                      <strong>Home delivery to flat</strong>
+                      <small>
+                        +₹{HOME_DELIVERY_FEE} — delivered to Flat {form.flat || "…"}
+                      </small>
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Order notes (optional)</label>
+                <textarea className="form-textarea" rows={2} placeholder="Any special instructions…" value={form.notes} onChange={(e) => set("notes", e.target.value)} />
               </div>
             </div>
 
-            <div
-              style={{
-                marginTop: 24,
-                padding: "16px 20px",
-                background: "var(--cream)",
-                borderRadius: "var(--radius-md)",
-                fontSize: 13,
-                color: "var(--text-muted)",
-                lineHeight: 1.7,
-              }}
-            >
-              💳 <strong>Payment on delivery.</strong> We accept cash and UPI at
-              your doorstep. You'll receive a call to confirm your order before
-              dispatch.
+            <div className="checkout-info-box">
+              <strong>No COD.</strong> Pay when you collect your order at your tower lobby
+              {form.tower && form.flat && (
+                <>
+                  {" "}
+                  (e.g. Tower {form.tower}, Flat {form.flat})
+                </>
+              )}
+              . Need it at your door? Choose home delivery for ₹{HOME_DELIVERY_FEE} extra.
             </div>
           </div>
 
@@ -209,52 +163,27 @@ export default function CheckoutPage() {
                     <span className="order-summary-item-name">
                       {product.name} × {qty} {product.unit}
                     </span>
-                    <span className="order-summary-item-price">
-                      ₹{(product.pricePerKg * qty).toLocaleString("en-IN")}
-                    </span>
+                    <span className="order-summary-item-price">₹{(product.pricePerKg * qty).toLocaleString("en-IN")}</span>
                   </div>
                 ))}
               </div>
               <div className="divider" />
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 8,
-                  margin: "12px 0",
-                }}
-              >
+              <div className="order-summary-totals">
                 <div className="total-row">
-                  <span style={{ fontSize: 14, color: "var(--text-muted)" }}>
-                    Subtotal
-                  </span>
+                  <span className="text-muted">Subtotal</span>
                   <span>₹{computed.cartTotal.toLocaleString("en-IN")}</span>
                 </div>
                 <div className="total-row">
-                  <span style={{ fontSize: 14, color: "var(--text-muted)" }}>
-                    Shipping
-                  </span>
-                  <span
-                    style={{
-                      color: shipping === 0 ? "var(--success)" : "inherit",
-                    }}
-                  >
-                    {shipping === 0 ? "FREE" : `₹${shipping}`}
-                  </span>
+                  <span className="text-muted">{form.deliveryType === "home" ? "Home delivery" : "Pickup"}</span>
+                  <span className={deliveryFee === 0 ? "text-success" : ""}>{deliveryFee === 0 ? "FREE" : `₹${deliveryFee}`}</span>
                 </div>
               </div>
               <div className="divider" />
-              <div className="total-row" style={{ margin: "12px 0 24px" }}>
+              <div className="total-row summary-grand">
                 <span className="total-label">Grand Total</span>
-                <span className="total-value">
-                  ₹{grandTotal.toLocaleString("en-IN")}
-                </span>
+                <span className="total-value">₹{grandTotal.toLocaleString("en-IN")}</span>
               </div>
-              <button
-                className="btn btn-primary btn-full"
-                onClick={handleSubmit}
-                disabled={submitting}
-              >
+              <button className="btn btn-primary btn-full" onClick={handleSubmit} disabled={submitting}>
                 {submitting ? "Placing order..." : "Place Order →"}
               </button>
             </div>

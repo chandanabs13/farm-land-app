@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { readOrders, insertOrder, updateOrderStatus, deleteOrder } from "./db.js";
 import { createToken, verifyToken, verifyPassword } from "./auth.js";
+import { validateOrderPayload } from "../lib/validateOrder.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -26,8 +27,9 @@ function requireAdmin(req, res, next) {
 app.post("/api/orders", async (req, res) => {
   try {
     const { customer, items, subtotal, shipping, total } = req.body;
-    if (!customer?.email || !items?.length || total == null) {
-      return res.status(400).json({ error: "Invalid order data" });
+    const validationError = validateOrderPayload(req.body);
+    if (validationError) {
+      return res.status(400).json({ error: validationError });
     }
 
     const order = await insertOrder({

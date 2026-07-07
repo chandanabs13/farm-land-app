@@ -24,8 +24,7 @@ export default function CartPage() {
     </div>
   );
 
-  const shipping = computed.cartTotal >= 1000 ? 0 : 99;
-  const grandTotal = computed.cartTotal + shipping;
+  const grandTotal = computed.cartTotal;
 
   return (
     <div className="checkout-page">
@@ -87,14 +86,9 @@ export default function CartPage() {
                   <span style={{ fontWeight: 600 }}>₹{computed.cartTotal.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="total-row">
-                  <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>Shipping</span>
-                  <span style={{ fontWeight: 600, color: shipping === 0 ? 'var(--success)' : 'inherit' }}>
-                    {shipping === 0 ? 'FREE' : `₹${shipping}`}
-                  </span>
+                  <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>Delivery</span>
+                  <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>At checkout</span>
                 </div>
-                {shipping > 0 && (
-                  <p style={{ fontSize: 12, color: 'var(--moss)' }}>Add ₹{(1000 - computed.cartTotal).toLocaleString('en-IN')} more for free shipping</p>
-                )}
               </div>
               <div className="divider" />
               <div className="total-row" style={{ margin: '12px 0 20px' }}>

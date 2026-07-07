@@ -1,6 +1,7 @@
 import { readOrders, insertOrder } from '../lib/db.js';
 import { requireAdmin } from '../lib/auth.js';
 import { parseBody } from '../lib/parseBody.js';
+import { validateOrderPayload } from '../lib/validateOrder.js';
 
 function formatError(err) {
   console.error('API error:', err.message, err.code, err.hint);
@@ -25,10 +26,13 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    const { customer, items, subtotal, shipping, total } = parseBody(req);
-    if (!customer?.email || !items?.length || total == null) {
-      return res.status(400).json({ error: 'Invalid order data' });
+    const body = parseBody(req);
+    const validationError = validateOrderPayload(body);
+    if (validationError) {
+      return res.status(400).json({ error: validationError });
     }
+
+    const { customer, items, subtotal, shipping, total } = body;
     try {
       const order = await insertOrder({
         id: `ORD-${Date.now()}`,

@@ -47,6 +47,20 @@ Orders API runs as Vercel serverless functions in `/api` — no separate server 
 
 Run `supabase/schema.sql` in SQL Editor if needed.
 
+**`customer` JSON** (stored automatically on each order):
+```json
+{
+  "name": "Ravi",
+  "phone": "9876543210",
+  "tower": "1",
+  "flat": "601",
+  "deliveryType": "pickup",
+  "notes": ""
+}
+```
+
+Use `supabase/view-orders.sql` in SQL Editor to see tower/flat as columns. No table migration needed when checkout fields change — JSONB holds any shape.
+
 ## Admin Panel
 Go to `/admin` → log in → manage orders and products.
 

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Phone, Mail, MapPin, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Phone, MapPin, Trash2 } from "lucide-react";
 import { useStore } from "../../context/StoreContext";
 import { useAdminAuth } from "../../context/AdminAuthContext";
+import { customerName, customerLocation } from "../../utils/customer";
 
 const STATUS_OPTIONS = ["pending", "confirmed", "delivered", "cancelled"];
 const statusColors = {
@@ -116,9 +117,7 @@ export default function AdminOrders() {
               >
                 <div className="order-row-meta">
                   <span className="order-row-id">{order.id}</span>
-                  <span style={{ fontWeight: 600 }}>
-                    {order.customer.firstName} {order.customer.lastName}
-                  </span>
+                  <span style={{ fontWeight: 600 }}>{customerName(order.customer)}</span>
                   <span style={{ fontSize: 13, color: "var(--text-muted)" }}>
                     {order.items.length} item
                     {order.items.length !== 1 ? "s" : ""}
@@ -201,26 +200,15 @@ export default function AdminOrders() {
                         fontSize: 14,
                       }}
                     >
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: 8,
-                          alignItems: "center",
-                        }}
-                      >
-                        <Mail size={14} color="var(--moss)" />{" "}
-                        {order.customer.email}
-                      </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: 8,
-                          alignItems: "center",
-                        }}
-                      >
-                        <Phone size={14} color="var(--moss)" />{" "}
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <Phone size={14} color="var(--moss)" />
                         {order.customer.phone}
                       </div>
+                      {order.customer.email && (
+                        <div style={{ fontSize: 14, color: "var(--text-muted)" }}>
+                          {order.customer.email}
+                        </div>
+                      )}
                       <div
                         style={{
                           display: "flex",
@@ -233,10 +221,7 @@ export default function AdminOrders() {
                           color="var(--moss)"
                           style={{ flexShrink: 0, marginTop: 2 }}
                         />
-                        <span>
-                          {order.customer.address}, {order.customer.city},{" "}
-                          {order.customer.state} – {order.customer.pincode}
-                        </span>
+                        <span>{customerLocation(order.customer)}</span>
                       </div>
                       {order.customer.notes && (
                         <div
