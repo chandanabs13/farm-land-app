@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react';
 import { X, Upload } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
-import { CATEGORIES, ORIGINS } from '../../data/initialProducts';
+import { CATEGORIES } from '../../data/initialProducts';
+import PillSelect, { originOptions } from '../shared/PillSelect';
 
 const EMOJIS = ['☕', '🌶️', '🧈', '🍯', '🫙', '🍐', '🟤', '🥥', '🌿', '🍋', '🥭', '🍌', '🫐', '🍊'];
 
@@ -115,10 +116,13 @@ export default function ProductFormModal({ product, onClose }) {
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">Farm Origin</label>
-              <select className="form-select" value={form.origin} onChange={e => set('origin', e.target.value)}>
-                {ORIGINS.map(o => <option key={o}>{o}</option>)}
-              </select>
+              <PillSelect
+                label="Farm origin"
+                options={originOptions()}
+                value={form.origin}
+                onChange={(v) => set('origin', v)}
+                size="sm"
+              />
             </div>
           </div>
 

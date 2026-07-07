@@ -449,6 +449,101 @@ select {
   line-height: 1.65;
 }
 
+/* ===== PILL SELECT (farm / filter chips) ===== */
+.pill-select {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pill-select-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.pill-select-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pill-select-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 99px;
+  border: 1.5px solid var(--border);
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.pill-select-btn:hover {
+  border-color: var(--moss);
+  color: var(--forest);
+  background: var(--cream);
+}
+.pill-select-btn.active {
+  border-color: var(--forest);
+  background: var(--forest);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.pill-select-btn.active .pill-select-emoji {
+  filter: none;
+}
+.pill-select-emoji {
+  font-size: 15px;
+  line-height: 1;
+}
+.pill-select-sm .pill-select-btn {
+  padding: 7px 12px;
+  font-size: 12px;
+}
+.pill-select-sm .pill-select-emoji {
+  font-size: 14px;
+}
+
+/* ===== SHOP FILTERS ===== */
+.shop-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 24px;
+  align-items: flex-end;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.shop-search-wrap {
+  position: relative;
+  flex: 1 1 220px;
+  min-width: 200px;
+  max-width: 360px;
+}
+.shop-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.shop-search-input {
+  padding-left: 38px !important;
+}
+.shop-category-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+
 /* ===== PRODUCT GRID ===== */
 .product-grid {
   display: grid;
@@ -1653,6 +1748,24 @@ tr:hover td {
   }
   .container {
     padding: 0 16px;
+  }
+  .shop-filters {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px;
+    gap: 14px;
+  }
+  .shop-search-wrap {
+    max-width: none;
+    flex: 1 1 auto;
+  }
+  .pill-select-options {
+    gap: 6px;
+  }
+  .pill-select-btn {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-width: calc(50% - 4px);
   }
   .nav-links {
     display: none;

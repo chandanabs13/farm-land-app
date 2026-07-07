@@ -5,6 +5,7 @@ import { useStore } from '../../context/StoreContext';
 import ProductCard from '../../components/storefront/ProductCard';
 import { CATEGORIES } from '../../data/initialProducts';
 import { usePageMeta } from '../../hooks/usePageMeta';
+import PillSelect, { SHOP_FARM_FILTERS } from '../../components/shared/PillSelect';
 
 export default function ShopPage() {
   const { computed } = useStore();
@@ -45,27 +46,26 @@ export default function ShopPage() {
           </p>
         </div>
 
-        {/* Filters */}
-        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 32, alignItems: 'center' }}>
-          <div style={{ position: 'relative', flex: '1 1 240px', maxWidth: 320 }}>
-            <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+        <div className="shop-filters">
+          <div className="shop-search-wrap">
+            <Search size={16} className="shop-search-icon" />
             <input
-              className="form-input"
+              className="form-input shop-search-input"
               placeholder="Search products..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ paddingLeft: 38 }}
             />
           </div>
-          <select className="form-select" style={{ flex: '0 0 auto', width: 'auto', minWidth: 140 }} value={selectedOrigin} onChange={e => setSelectedOrigin(e.target.value)}>
-            <option value="All">All Farms</option>
-            <option value="Coorg">Coorg Farm</option>
-            <option value="Bangalore">Bangalore Farm</option>
-          </select>
+          <PillSelect
+            label="Farm"
+            options={SHOP_FARM_FILTERS}
+            value={selectedOrigin}
+            onChange={setSelectedOrigin}
+            size="sm"
+          />
         </div>
 
-        {/* Category tabs */}
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 32 }}>
+        <div className="shop-category-filters">
           {['All', ...CATEGORIES].map(cat => (
             <button
               key={cat}
@@ -92,7 +92,7 @@ export default function ShopPage() {
             <p className="empty-state-desc">
               Some products are seasonal. Try a different category or check back soon.
             </p>
-            <button className="btn btn-primary" onClick={() => { setSelectedCat('All'); setSearch(''); }}>
+            <button className="btn btn-primary" onClick={() => { setSelectedCat('All'); setSearch(''); setSelectedOrigin('All'); }}>
               Clear Filters
             </button>
           </div>
