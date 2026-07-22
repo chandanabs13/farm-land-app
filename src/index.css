@@ -1566,8 +1566,9 @@ tr:hover td {
 }
 
 .feature-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 24px;
 }
 .feature-card {
@@ -1575,6 +1576,8 @@ tr:hover td {
   border-radius: var(--radius-md);
   padding: 28px;
   border: 1px solid var(--border);
+  flex: 1 1 240px;
+  max-width: 320px;
 }
 .feature-card-icon {
   width: 48px;
@@ -1878,11 +1881,12 @@ tr:hover td {
     margin-bottom: 14px;
   }
   .feature-grid {
-    grid-template-columns: 1fr;
     gap: 16px;
   }
   .feature-card {
     padding: 22px;
+    flex: 1 1 100%;
+    max-width: none;
   }
   .cart-panel {
     width: 100%;
