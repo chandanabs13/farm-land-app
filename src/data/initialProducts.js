@@ -65,17 +65,17 @@ export const INITIAL_PRODUCTS = [
   },
   {
     id: "5",
-    name: "Fresh Jackfruit",
+    name: "Fresh Jackfruit Pods",
     category: "Fruits",
     origin: "Bangalore Farm",
-    pricePerKg: 60,
-    unit: "kg",
+    pricePerKg: 200,
+    unit: "pack (15 pods)",
     description:
-      "Farm-fresh jackfruit grown on our Bangalore land. Sweet, fibrous, and naturally ripened on the tree. Available only in season (March–June). We cut and pack same-day for freshness.",
+      "Farm-fresh jackfruit pods from our Bangalore land — sweet, fibrous, and tree-ripened. Sold in packs of 15 pods for ₹200. Order 1 pack, 2 packs, and so on. Same-day cut and packed for freshness. Seasonal only.",
     image: null,
     emoji: "🫙",
-    available: false,
-    featured: false,
+    available: true,
+    featured: true,
     createdAt: new Date().toISOString(),
   },
   {

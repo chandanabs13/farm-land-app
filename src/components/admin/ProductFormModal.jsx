@@ -138,7 +138,10 @@ export default function ProductFormModal({ product, onClose }) {
               <select className="form-select" value={form.unit} onChange={e => set('unit', e.target.value)}>
                 <option value="kg">per kg</option>
                 <option value="piece">per piece</option>
+                <option value="L">per litre</option>
                 <option value="litre">per litre</option>
+                <option value="pack (15 pods)">per pack (15 pods)</option>
+                <option value="pod">per pod</option>
                 <option value="250g">per 250g</option>
                 <option value="500g">per 500g</option>
               </select>

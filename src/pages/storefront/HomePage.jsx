@@ -135,7 +135,7 @@ export default function HomePage() {
                 title: "Bangalore Farm",
                 subtitle: "Bangalore Rural District, Karnataka",
                 desc: "A working orchard just outside the city. No chemicals, no shortcuts. The trees grow on their own schedule — and so do the harvests.",
-                items: ["Guava", "Jackfruit (seasonal)", "Chikoo", "Coconut", "Wood Pressed Coconut Oil"],
+                items: ["Guava", "Jackfruit Pods", "Chikoo", "Coconut", "Wood Pressed Coconut Oil"],
               },
             ].map((farm) => (
               <div key={farm.title} className="farm-card">

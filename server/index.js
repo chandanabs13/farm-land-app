@@ -45,8 +45,18 @@ app.post("/api/orders", async (req, res) => {
 
     res.status(201).json(order);
   } catch (err) {
-    console.error("POST /api/orders:", err.message, err.details || "");
-    res.status(500).json({ error: "Failed to save order" });
+    console.error("POST /api/orders:", err.message, err.details || "", err.code || "");
+    const isNetwork =
+      err.message?.includes("fetch failed") ||
+      err.message?.includes("ENOTFOUND") ||
+      err.details?.includes("ENOTFOUND") ||
+      err.details?.includes("fetch failed");
+    res.status(500).json({
+      error: isNetwork
+        ? "Cannot reach Supabase. Check your internet, or open supabase.com and restore the project if it is paused."
+        : "Failed to save order",
+      details: err.message,
+    });
   }
 });
 

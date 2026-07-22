@@ -46,7 +46,18 @@ export default async function handler(req, res) {
       });
       return res.status(201).json(order);
     } catch (err) {
-      return res.status(500).json(formatError(err));
+      console.error('POST /api/orders:', err.message, err.details || '');
+      const isNetwork =
+        err.message?.includes('fetch failed') ||
+        err.message?.includes('ENOTFOUND') ||
+        String(err.details || '').includes('ENOTFOUND') ||
+        String(err.details || '').includes('fetch failed');
+      return res.status(500).json({
+        error: isNetwork
+          ? 'Cannot reach Supabase. Open supabase.com — restore the project if paused, or update SUPABASE_URL in .env / Vercel.'
+          : formatError(err).error,
+        details: err.message,
+      });
     }
   }
 
