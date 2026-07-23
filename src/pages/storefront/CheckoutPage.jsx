@@ -120,7 +120,7 @@ export default function CheckoutPage() {
                   <label className={`delivery-option${form.deliveryType === "pickup" ? " selected" : ""}`}>
                     <input type="radio" name="deliveryType" value="pickup" checked={form.deliveryType === "pickup"} onChange={() => set("deliveryType", "pickup")} />
                     <span>
-                      <strong>Pickup at tower lobby</strong>
+                      <strong>Pickup at Tower-1, 601</strong>
                       <small>Free — collect at Tower 1,601</small>
                     </span>
                   </label>
