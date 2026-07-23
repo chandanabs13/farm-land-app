@@ -1,6 +1,7 @@
-import { createContext, useContext, useReducer } from 'react';
+import { createContext, useContext, useReducer, useEffect } from 'react';
 import { INITIAL_PRODUCTS } from '../data/initialProducts';
 import * as ordersApi from '../api/orders';
+import * as productsApi from '../api/products';
 
 const load = (key, fallback) => {
   try {
@@ -15,7 +16,9 @@ const save = (key, value) => {
 };
 
 const initialState = {
-  products: load('coorg_products', INITIAL_PRODUCTS),
+  // Show seed products instantly, then replace with shared Supabase catalog
+  products: INITIAL_PRODUCTS,
+  productsLoading: true,
   cart: load('coorg_cart', []),
   orders: [],
   ordersLoading: false,
@@ -25,26 +28,19 @@ const initialState = {
 
 function reducer(state, action) {
   switch (action.type) {
-    case 'ADD_PRODUCT': {
-      const products = [...state.products, { ...action.payload, id: Date.now().toString(), createdAt: new Date().toISOString() }];
-      save('coorg_products', products);
+    case 'SET_PRODUCTS':
+      return { ...state, products: action.payload, productsLoading: false };
+    case 'SET_PRODUCTS_LOADING':
+      return { ...state, productsLoading: action.payload };
+    case 'UPSERT_PRODUCT': {
+      const exists = state.products.some((p) => p.id === action.payload.id);
+      const products = exists
+        ? state.products.map((p) => (p.id === action.payload.id ? action.payload : p))
+        : [...state.products, action.payload];
       return { ...state, products };
     }
-    case 'UPDATE_PRODUCT': {
-      const products = state.products.map(p => p.id === action.payload.id ? { ...p, ...action.payload } : p);
-      save('coorg_products', products);
-      return { ...state, products };
-    }
-    case 'DELETE_PRODUCT': {
-      const products = state.products.filter(p => p.id !== action.payload);
-      save('coorg_products', products);
-      return { ...state, products };
-    }
-    case 'TOGGLE_AVAILABILITY': {
-      const products = state.products.map(p => p.id === action.payload ? { ...p, available: !p.available } : p);
-      save('coorg_products', products);
-      return { ...state, products };
-    }
+    case 'REMOVE_PRODUCT':
+      return { ...state, products: state.products.filter((p) => p.id !== action.payload) };
 
     case 'ADD_TO_CART': {
       const existing = state.cart.find(i => i.productId === action.payload.productId);
@@ -108,11 +104,76 @@ export function StoreProvider({ children }) {
     setTimeout(() => dispatch({ type: 'REMOVE_TOAST', payload: id }), 3200);
   };
 
+  const getAdminToken = () => {
+    try {
+      const raw = localStorage.getItem('coorg_admin_session');
+      if (!raw) return null;
+      const { token, expiresAt } = JSON.parse(raw);
+      if (!token || Date.now() > expiresAt) return null;
+      return token;
+    } catch {
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const products = await productsApi.fetchProducts();
+        if (!cancelled) dispatch({ type: 'SET_PRODUCTS', payload: products });
+      } catch {
+        if (!cancelled) {
+          dispatch({ type: 'SET_PRODUCTS', payload: INITIAL_PRODUCTS });
+          toast('Could not load shared products. Showing local catalog.', 'error');
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   const actions = {
-    addProduct: (p) => dispatch({ type: 'ADD_PRODUCT', payload: p }),
-    updateProduct: (p) => dispatch({ type: 'UPDATE_PRODUCT', payload: p }),
-    deleteProduct: (id) => dispatch({ type: 'DELETE_PRODUCT', payload: id }),
-    toggleAvailability: (id) => dispatch({ type: 'TOGGLE_AVAILABILITY', payload: id }),
+    fetchProducts: async () => {
+      dispatch({ type: 'SET_PRODUCTS_LOADING', payload: true });
+      try {
+        const products = await productsApi.fetchProducts();
+        dispatch({ type: 'SET_PRODUCTS', payload: products });
+      } catch {
+        dispatch({ type: 'SET_PRODUCTS_LOADING', payload: false });
+        toast('Could not load products', 'error');
+      }
+    },
+
+    addProduct: async (p) => {
+      const token = getAdminToken();
+      if (!token) throw new Error('Admin login required');
+      const product = await productsApi.createProduct(p, token);
+      dispatch({ type: 'UPSERT_PRODUCT', payload: product });
+      return product;
+    },
+
+    updateProduct: async (p) => {
+      const token = getAdminToken();
+      if (!token) throw new Error('Admin login required');
+      const product = await productsApi.updateProduct(p, token);
+      dispatch({ type: 'UPSERT_PRODUCT', payload: product });
+      return product;
+    },
+
+    deleteProduct: async (id) => {
+      const token = getAdminToken();
+      if (!token) throw new Error('Admin login required');
+      await productsApi.deleteProduct(id, token);
+      dispatch({ type: 'REMOVE_PRODUCT', payload: id });
+    },
+
+    toggleAvailability: async (id) => {
+      const token = getAdminToken();
+      if (!token) throw new Error('Admin login required');
+      const product = await productsApi.toggleProductAvailability(id, token);
+      dispatch({ type: 'UPSERT_PRODUCT', payload: product });
+      return product;
+    },
 
     addToCart: (productId, qty = 1) => dispatch({ type: 'ADD_TO_CART', payload: { productId, qty } }),
     updateCartQty: (productId, qty) => dispatch({ type: 'UPDATE_CART_QTY', payload: { productId, qty } }),

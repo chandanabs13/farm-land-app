@@ -19,6 +19,8 @@ export default function ProductFormModal({ product, onClose }) {
   const [errors, setErrors] = useState({});
   const fileRef = useRef();
 
+  const [submitting, setSubmitting] = useState(false);
+
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
 
   const validate = () => {
@@ -38,17 +40,23 @@ export default function ProductFormModal({ product, onClose }) {
     reader.readAsDataURL(file);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validate()) return;
+    setSubmitting(true);
     const payload = { ...form, pricePerKg: Number(form.pricePerKg) };
-    if (isEdit) {
-      actions.updateProduct(payload);
-      actions.toast('Product updated successfully');
-    } else {
-      actions.addProduct(payload);
-      actions.toast('Product added successfully');
+    try {
+      if (isEdit) {
+        await actions.updateProduct(payload);
+        actions.toast('Product updated — synced to all devices');
+      } else {
+        await actions.addProduct(payload);
+        actions.toast('Product added — synced to all devices');
+      }
+      onClose();
+    } catch (err) {
+      actions.toast(err.message || 'Could not save product', 'error');
+      setSubmitting(false);
     }
-    onClose();
   };
 
   return (
@@ -176,8 +184,8 @@ export default function ProductFormModal({ product, onClose }) {
 
         <div className="modal-footer">
           <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={handleSubmit}>
-            {isEdit ? 'Save Changes' : 'Add Product'}
+          <button className="btn btn-primary" onClick={handleSubmit} disabled={submitting}>
+            {submitting ? 'Saving...' : isEdit ? 'Save Changes' : 'Add Product'}
           </button>
         </div>
       </div>

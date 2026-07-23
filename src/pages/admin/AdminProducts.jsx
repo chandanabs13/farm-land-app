@@ -8,10 +8,23 @@ export default function AdminProducts() {
   const [modalProduct, setModalProduct] = useState(undefined); // undefined = closed, null = new, product = edit
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-  const handleDelete = (id) => {
-    actions.deleteProduct(id);
-    actions.toast('Product deleted', 'error');
-    setDeleteConfirm(null);
+  const handleDelete = async (id) => {
+    try {
+      await actions.deleteProduct(id);
+      actions.toast('Product deleted on all devices', 'error');
+      setDeleteConfirm(null);
+    } catch (err) {
+      actions.toast(err.message || 'Could not delete product', 'error');
+    }
+  };
+
+  const handleToggle = async (p) => {
+    try {
+      await actions.toggleAvailability(p.id);
+      actions.toast(p.available ? 'Product hidden on all devices' : 'Product now visible on all devices');
+    } catch (err) {
+      actions.toast(err.message || 'Could not update product', 'error');
+    }
   };
 
   return (
@@ -72,7 +85,7 @@ export default function AdminProducts() {
                     <button
                       className="btn btn-sm btn-secondary"
                       title={p.available ? 'Hide from store' : 'Show in store'}
-                      onClick={() => { actions.toggleAvailability(p.id); actions.toast(p.available ? 'Product hidden' : 'Product now visible'); }}
+                      onClick={() => handleToggle(p)}
                     >
                       {p.available ? <EyeOff size={14} /> : <Eye size={14} />}
                     </button>

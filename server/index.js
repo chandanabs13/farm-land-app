@@ -6,13 +6,22 @@ import { fileURLToPath } from "url";
 import { readOrders, insertOrder, updateOrderStatus, deleteOrder } from "./db.js";
 import { createToken, verifyToken, verifyPassword } from "./auth.js";
 import { validateOrderPayload } from "../lib/validateOrder.js";
+import {
+  readProducts,
+  seedProductsIfEmpty,
+  insertProduct,
+  updateProduct,
+  deleteProduct,
+  toggleProductAvailability,
+} from "../lib/products.js";
+import { INITIAL_PRODUCTS } from "../lib/seedProducts.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "5mb" }));
 
 function requireAdmin(req, res, next) {
   const auth = req.headers.authorization || "";
@@ -67,6 +76,65 @@ app.post("/api/admin/login", (req, res) => {
     return res.status(401).json({ error: "Incorrect password" });
   }
   res.json({ token: createToken() });
+});
+
+// ─── Products (shared catalog for all devices) ───────────────────────────────
+app.get("/api/products", async (_req, res) => {
+  try {
+    let products = await readProducts();
+    if (products.length === 0) {
+      products = await seedProductsIfEmpty(INITIAL_PRODUCTS);
+    }
+    res.json(products);
+  } catch (err) {
+    console.error("GET /api/products:", err.message);
+    res.status(500).json({ error: "Failed to load products", details: err.message });
+  }
+});
+
+app.post("/api/products", requireAdmin, async (req, res) => {
+  try {
+    const body = req.body;
+    if (!body?.name?.trim() || body.pricePerKg == null) {
+      return res.status(400).json({ error: "Name and price are required" });
+    }
+    const product = await insertProduct({
+      ...body,
+      id: body.id || Date.now().toString(),
+      createdAt: new Date().toISOString(),
+    });
+    res.status(201).json(product);
+  } catch (err) {
+    console.error("POST /api/products:", err.message);
+    res.status(500).json({ error: "Failed to add product", details: err.message });
+  }
+});
+
+app.patch("/api/products/:id", requireAdmin, async (req, res) => {
+  try {
+    if (req.body?.toggleAvailability) {
+      const updated = await toggleProductAvailability(req.params.id);
+      if (!updated) return res.status(404).json({ error: "Product not found" });
+      return res.json(updated);
+    }
+    const updated = await updateProduct({ ...req.body, id: req.params.id });
+    if (!updated) return res.status(404).json({ error: "Product not found" });
+    res.json(updated);
+  } catch (err) {
+    console.error("PATCH /api/products:", err.message);
+    res.status(500).json({ error: "Failed to update product", details: err.message });
+  }
+});
+
+app.delete("/api/products/:id", requireAdmin, async (req, res) => {
+  try {
+    const removed = await deleteProduct(req.params.id);
+    if (!removed) return res.status(404).json({ error: "Product not found" });
+    res.json(removed);
+  } catch (err) {
+    console.error("DELETE /api/products:", err.message);
+    res.status(500).json({ error: "Failed to delete product", details: err.message });
+  }
 });
 
 // ─── Admin: list orders ──────────────────────────────────────────────────────
@@ -124,7 +192,7 @@ app.get("*", (req, res, next) => {
 
 const server = app.listen(PORT, () => {
   console.log(`Coorg Farm API running on http://localhost:${PORT}`);
-  console.log("Orders stored in Supabase");
+  console.log("Orders + products stored in Supabase");
 });
 
 server.on("error", (err) => {

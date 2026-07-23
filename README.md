@@ -31,7 +31,8 @@ Orders API runs as Vercel serverless functions in `/api` — no separate server 
 ## Supabase setup (one-time)
 
 1. Create project at [supabase.com](https://supabase.com)
-2. Create `orders` table with columns:
+2. Run **`supabase/products.sql`** in SQL Editor (shared product catalog across laptop + phone)
+3. Create `orders` table with columns:
 
 | Column | Type |
 |--------|------|
