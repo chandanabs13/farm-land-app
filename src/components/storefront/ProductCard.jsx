@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { MapPin, ShoppingCart } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
+import ProductPrice from './ProductPrice';
 
 export default function ProductCard({ product }) {
   const { actions } = useStore();
@@ -27,10 +28,7 @@ export default function ProductCard({ product }) {
         </p>
         <p className="product-card-desc">{product.description}</p>
         <div className="product-card-footer">
-          <div className="product-price">
-            <span className="product-price-amount">₹{product.pricePerKg.toLocaleString('en-IN')}</span>
-            <span className="product-price-unit">per {product.unit}</span>
-          </div>
+          <ProductPrice product={product} />
           <button className="btn btn-primary btn-sm" onClick={handleAdd}>
             <ShoppingCart size={14} /> Add
           </button>

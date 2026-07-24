@@ -3,6 +3,8 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { MapPin, ShoppingCart, ChevronRight } from "lucide-react";
 import { useStore } from "../../context/StoreContext";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import ProductPrice from "../../components/storefront/ProductPrice";
+import ProductCard from "../../components/storefront/ProductCard";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -55,7 +57,6 @@ export default function ProductDetailPage() {
   return (
     <div className="product-detail">
       <div className="container">
-        {/* Breadcrumb */}
         <div className="breadcrumb">
           <Link to="/">Home</Link>
           <span className="breadcrumb-sep">
@@ -69,7 +70,6 @@ export default function ProductDetailPage() {
         </div>
 
         <div className="product-detail-grid">
-          {/* Image */}
           <div className="product-detail-image-wrap">
             {product.image ? (
               <img src={product.image} alt={product.name} className="product-detail-image" />
@@ -78,7 +78,6 @@ export default function ProductDetailPage() {
             )}
           </div>
 
-          {/* Info */}
           <div className="product-detail-info">
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <span className="tag">{product.category}</span>
@@ -91,10 +90,7 @@ export default function ProductDetailPage() {
               <MapPin size={14} /> {product.origin}
             </p>
 
-            <div className="product-detail-price">
-              ₹{product.pricePerKg.toLocaleString("en-IN")}
-              <span> / {product.unit}</span>
-            </div>
+            <ProductPrice product={product} size="detail" />
 
             <p className="product-detail-desc">{product.description}</p>
 
@@ -126,29 +122,15 @@ export default function ProductDetailPage() {
                 Buy Now →
               </button>
             </div>
-
-            {/* <div style={{ background: 'var(--cream)', borderRadius: 'var(--radius-md)', padding: '16px 20px', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.7 }}>
-              🚚 Dispatched within 24 hours &nbsp;·&nbsp; 🌿 No preservatives &nbsp;·&nbsp; 📦 Packed fresh
-            </div> */}
           </div>
         </div>
 
-        {/* Related */}
         {related.length > 0 && (
           <div style={{ marginTop: 64 }}>
             <h2 style={{ fontFamily: "var(--font-display)", fontSize: 24, marginBottom: 24, color: "var(--soil)" }}>More {product.category}</h2>
             <div className="product-grid">
               {related.map((p) => (
-                <Link key={p.id} to={`/product/${p.id}`} className="product-card">
-                  {p.image ? <img src={p.image} alt={p.name} className="product-card-image" /> : <div className="product-card-image-placeholder">{p.emoji}</div>}
-                  <div className="product-card-body">
-                    <h3 className="product-card-name">{p.name}</h3>
-                    <div className="product-price">
-                      <span className="product-price-amount">₹{p.pricePerKg.toLocaleString("en-IN")}</span>
-                      <span className="product-price-unit">per {p.unit}</span>
-                    </div>
-                  </div>
-                </Link>
+                <ProductCard key={p.id} product={p} />
               ))}
             </div>
           </div>

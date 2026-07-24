@@ -6,6 +6,7 @@ import ProductCard from '../../components/storefront/ProductCard';
 import { CATEGORIES } from '../../data/initialProducts';
 import { usePageMeta } from '../../hooks/usePageMeta';
 import PillSelect, { SHOP_FARM_FILTERS } from '../../components/shared/PillSelect';
+import { hasDiscount } from '../../utils/pricing';
 
 export default function ShopPage() {
   const { computed } = useStore();
@@ -17,6 +18,7 @@ export default function ShopPage() {
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState(searchParams.get('cat') || 'All');
   const [selectedOrigin, setSelectedOrigin] = useState('All');
+  const saleOnly = searchParams.get('sale') === '1';
 
   useEffect(() => {
     const cat = searchParams.get('cat');
@@ -24,25 +26,46 @@ export default function ShopPage() {
   }, [searchParams]);
 
   const filtered = computed.availableProducts.filter(p => {
+    const matchSale = !saleOnly || hasDiscount(p);
     const matchCat = selectedCat === 'All' || p.category === selectedCat;
     const matchOrigin = selectedOrigin === 'All' || p.origin.includes(selectedOrigin.split(' ')[0]);
     const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.description.toLowerCase().includes(search.toLowerCase());
-    return matchCat && matchOrigin && matchSearch;
+    return matchSale && matchCat && matchOrigin && matchSearch;
   });
+
+  const syncParams = (next) => {
+    const params = {};
+    if (next.cat && next.cat !== 'All') params.cat = next.cat;
+    if (next.sale) params.sale = '1';
+    setSearchParams(params);
+  };
 
   const handleCat = (cat) => {
     setSelectedCat(cat);
-    setSearchParams(cat !== 'All' ? { cat } : {});
+    syncParams({ cat, sale: saleOnly });
+  };
+
+  const toggleSale = () => {
+    syncParams({ cat: selectedCat, sale: !saleOnly });
+  };
+
+  const clearFilters = () => {
+    setSelectedCat('All');
+    setSearch('');
+    setSelectedOrigin('All');
+    setSearchParams({});
   };
 
   return (
     <div className="section">
       <div className="container">
         <div className="section-header" style={{ textAlign: 'left', marginBottom: 32 }}>
-          <div className="section-eyebrow">Our products</div>
-          <h1 className="section-title">Farm Fresh Shop</h1>
+          <div className="section-eyebrow">{saleOnly ? 'Sale picks' : 'Our products'}</div>
+          <h1 className="section-title">{saleOnly ? 'On sale now' : 'Farm Fresh Shop'}</h1>
           <p className="section-subtitle" style={{ margin: 0, maxWidth: 'none' }}>
-            Only what's in season and in stock. Prices are per kg unless noted.
+            {saleOnly
+              ? 'Discounted farm products — grab yours before the sale ends.'
+              : "Only what's in season and in stock. Prices are per kg unless noted."}
           </p>
         </div>
 
@@ -66,16 +89,23 @@ export default function ShopPage() {
         </div>
 
         <div className="shop-category-filters">
+          <button
+            type="button"
+            onClick={toggleSale}
+            className={`btn btn-sm ${saleOnly ? 'btn-amber' : 'btn-secondary'}`}
+          >
+            On sale
+          </button>
           {['All', ...CATEGORIES].map(cat => (
             <button
               key={cat}
+              type="button"
               onClick={() => handleCat(cat)}
               className={`btn btn-sm ${selectedCat === cat ? 'btn-primary' : 'btn-secondary'}`}
             >{cat}</button>
           ))}
         </div>
 
-        {/* Results */}
         {filtered.length > 0 ? (
           <>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
@@ -90,9 +120,11 @@ export default function ShopPage() {
             <div className="empty-state-icon">🌿</div>
             <h3 className="empty-state-title">Nothing here right now</h3>
             <p className="empty-state-desc">
-              Some products are seasonal. Try a different category or check back soon.
+              {saleOnly
+                ? 'No sale products match these filters. Clear filters or browse the full shop.'
+                : 'Some products are seasonal. Try a different category or check back soon.'}
             </p>
-            <button className="btn btn-primary" onClick={() => { setSelectedCat('All'); setSearch(''); setSelectedOrigin('All'); }}>
+            <button className="btn btn-primary" onClick={clearFilters}>
               Clear Filters
             </button>
           </div>

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Leaf, Shield, Star } from "lucide-react";
 import { useStore } from "../../context/StoreContext";
 import ProductCard from "../../components/storefront/ProductCard";
+import SalePopup from "../../components/storefront/SalePopup";
 import { usePageMeta } from "../../hooks/usePageMeta";
 
 export default function HomePage() {
@@ -12,13 +13,16 @@ export default function HomePage() {
 
   return (
     <>
+      <SalePopup />
+
       {/* Hero */}
       <section className="hero">
         <div className="container">
           <div className="hero-content">
-            <div className="hero-eyebrow">
-              <Leaf size={12} /> Two farms. One family.
-            </div>
+            <Link to="/shop?sale=1" className="hero-sale-banner">
+              <span className="hero-sale-live">Sale is live</span>
+              <span className="hero-sale-copy">Book yours now before the sale ends</span>
+            </Link>
             <h1>
               Real food from
               <br />
@@ -31,8 +35,8 @@ export default function HomePage() {
               compromises.
             </p>
             <div className="hero-actions">
-              <Link to="/shop" className="btn btn-amber">
-                Shop Now <ArrowRight size={16} />
+              <Link to="/shop?sale=1" className="btn btn-amber">
+                Book yours now <ArrowRight size={16} />
               </Link>
               <Link to="/about" className="btn btn-secondary" style={{ borderColor: "rgba(255,255,255,0.4)", color: "#fff" }}>
                 Our Story

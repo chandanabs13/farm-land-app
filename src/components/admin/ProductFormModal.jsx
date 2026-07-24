@@ -8,7 +8,7 @@ const EMOJIS = ['☕', '🌶️', '🧈', '🍯', '🫙', '🍐', '🟤', '🥥'
 
 const EMPTY = {
   name: '', category: 'Coffee', origin: 'Coorg Farm', pricePerKg: '',
-  unit: 'kg', description: '', image: null, emoji: '☕',
+  originalPrice: '', unit: 'kg', description: '', image: null, emoji: '☕',
   available: true, featured: false,
 };
 
@@ -27,6 +27,12 @@ export default function ProductFormModal({ product, onClose }) {
     const e = {};
     if (!form.name.trim()) e.name = 'Name is required';
     if (!form.pricePerKg || Number(form.pricePerKg) <= 0) e.pricePerKg = 'Valid price required';
+    if (form.originalPrice !== '' && form.originalPrice != null) {
+      const original = Number(form.originalPrice);
+      if (original > 0 && original <= Number(form.pricePerKg)) {
+        e.originalPrice = 'Original price must be higher than sale price';
+      }
+    }
     if (!form.description.trim()) e.description = 'Description is required';
     setErrors(e);
     return !Object.keys(e).length;
@@ -43,7 +49,12 @@ export default function ProductFormModal({ product, onClose }) {
   const handleSubmit = async () => {
     if (!validate()) return;
     setSubmitting(true);
-    const payload = { ...form, pricePerKg: Number(form.pricePerKg) };
+    const originalRaw = form.originalPrice;
+    const originalPrice =
+      originalRaw !== '' && originalRaw != null && Number(originalRaw) > 0
+        ? Number(originalRaw)
+        : null;
+    const payload = { ...form, pricePerKg: Number(form.pricePerKg), originalPrice };
     try {
       if (isEdit) {
         await actions.updateProduct(payload);
@@ -134,12 +145,27 @@ export default function ProductFormModal({ product, onClose }) {
             </div>
           </div>
 
-          {/* Price + Unit */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          {/* Price + Original + Unit */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
             <div className="form-group">
-              <label className="form-label">Price (₹) *</label>
-              <input className="form-input" type="number" min="1" value={form.pricePerKg} onChange={e => set('pricePerKg', e.target.value)} placeholder="980" />
+              <label className="form-label">Sale price (₹) *</label>
+              <input className="form-input" type="number" min="1" value={form.pricePerKg} onChange={e => set('pricePerKg', e.target.value)} placeholder="560" />
               {errors.pricePerKg && <span className="form-error">{errors.pricePerKg}</span>}
+            </div>
+            <div className="form-group">
+              <label className="form-label">Original price (₹)</label>
+              <input
+                className="form-input"
+                type="number"
+                min="0"
+                value={form.originalPrice ?? ''}
+                onChange={e => set('originalPrice', e.target.value)}
+                placeholder="600"
+              />
+              {errors.originalPrice && <span className="form-error">{errors.originalPrice}</span>}
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, display: 'block' }}>
+                Optional — shows strikethrough + % OFF
+              </span>
             </div>
             <div className="form-group">
               <label className="form-label">Unit</label>
