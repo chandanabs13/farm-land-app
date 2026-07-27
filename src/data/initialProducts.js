@@ -128,7 +128,6 @@ export const INITIAL_PRODUCTS = [
     category: "Oils",
     origin: "Bangalore Farm",
     pricePerKg: 560,
-    originalPrice: 600,
     unit: "L",
     description:
       "Pure wood-pressed (mara chekku) coconut oil from our farm coconuts. Cold-pressed the traditional way — no heat, no chemicals, no refining. Rich aroma, natural goodness for cooking and hair care.",

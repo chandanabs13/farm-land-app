@@ -6,6 +6,11 @@ import { fileURLToPath } from "url";
 import { readOrders, insertOrder, updateOrderStatus, deleteOrder } from "./db.js";
 import { createToken, verifyToken, verifyPassword } from "./auth.js";
 import { validateOrderPayload } from "../lib/validateOrder.js";
+import { notifyAdminsNewOrder } from "../lib/notifyAdmins.js";
+import {
+  savePushSubscription,
+  deletePushSubscription,
+} from "../lib/pushSubscriptions.js";
 import {
   readProducts,
   seedProductsIfEmpty,
@@ -52,6 +57,10 @@ app.post("/api/orders", async (req, res) => {
       createdAt: new Date().toISOString(),
     });
 
+    notifyAdminsNewOrder(order).catch((err) => {
+      console.error("notifyAdmins:", err.message);
+    });
+
     res.status(201).json(order);
   } catch (err) {
     console.error("POST /api/orders:", err.message, err.details || "", err.code || "");
@@ -76,6 +85,34 @@ app.post("/api/admin/login", (req, res) => {
     return res.status(401).json({ error: "Incorrect password" });
   }
   res.json({ token: createToken() });
+});
+
+// ─── Admin: browser push (order alerts) ──────────────────────────────────────
+app.get("/api/admin/push", requireAdmin, (req, res) => {
+  const publicKey = process.env.VAPID_PUBLIC_KEY;
+  if (!publicKey) {
+    return res.status(503).json({ error: "Push notifications not configured (missing VAPID_PUBLIC_KEY)" });
+  }
+  res.json({ publicKey });
+});
+
+app.post("/api/admin/push", requireAdmin, async (req, res) => {
+  try {
+    await savePushSubscription(req.body);
+    res.status(201).json({ ok: true });
+  } catch (err) {
+    console.error("POST /api/admin/push:", err.message);
+    res.status(500).json({ error: "Could not save subscription", details: err.message });
+  }
+});
+
+app.delete("/api/admin/push", requireAdmin, async (req, res) => {
+  try {
+    await deletePushSubscription(req.body?.endpoint);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: "Could not remove subscription", details: err.message });
+  }
 });
 
 // ─── Products (shared catalog for all devices) ───────────────────────────────

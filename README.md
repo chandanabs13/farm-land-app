@@ -21,12 +21,27 @@ Open http://localhost:5173
 | `SUPABASE_SERVICE_ROLE_KEY` | service_role key from Supabase |
 | `ADMIN_PASSWORD` | your admin password |
 | `ADMIN_SECRET` | random secret string |
+| `VAPID_PUBLIC_KEY` | from `npx web-push generate-vapid-keys` |
+| `VAPID_PRIVATE_KEY` | from `npx web-push generate-vapid-keys` |
+| `VAPID_SUBJECT` | `mailto:you@example.com` |
 
 5. Deploy → your site is live at `https://your-app.vercel.app`
 6. Update `public/sitemap.xml` and `public/robots.txt` with your real Vercel URL
 7. Submit sitemap in [Google Search Console](https://search.google.com/search-console)
 
 Orders API runs as Vercel serverless functions in `/api` — no separate server needed.
+
+## Admin phone alerts (browser push — like Zomato)
+
+When a customer places an order, admins who enabled alerts get a **phone/browser notification** (not SMS).
+
+1. Run `supabase/push_subscriptions.sql` in Supabase SQL Editor  
+2. Add VAPID keys to `.env` and Vercel (generate: `npx web-push generate-vapid-keys`)  
+3. Redeploy / restart `npm run dev`  
+4. On **each admin phone**: open the live site → `/admin` → log in → tap **Enable order alerts** → Allow  
+5. Place a test order — notification appears on that phone  
+
+**Notes:** Android Chrome works best. iPhone needs iOS 16.4+ and **Add to Home Screen**, then open from the home icon. Only admins who enable alerts get notified.
 
 ## Supabase setup (one-time)
 

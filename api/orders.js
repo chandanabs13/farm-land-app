@@ -2,6 +2,7 @@ import { readOrders, insertOrder } from '../lib/db.js';
 import { requireAdmin } from '../lib/auth.js';
 import { parseBody } from '../lib/parseBody.js';
 import { validateOrderPayload } from '../lib/validateOrder.js';
+import { notifyAdminsNewOrder } from '../lib/notifyAdmins.js';
 
 function formatError(err) {
   console.error('API error:', err.message, err.code, err.hint);
@@ -43,6 +44,10 @@ export default async function handler(req, res) {
         total,
         status: 'pending',
         createdAt: new Date().toISOString(),
+      });
+      // Fire-and-forget — never block / fail the customer order
+      notifyAdminsNewOrder(order).catch((err) => {
+        console.error('notifyAdmins:', err.message);
       });
       return res.status(201).json(order);
     } catch (err) {

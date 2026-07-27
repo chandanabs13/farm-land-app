@@ -1,12 +1,25 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import { hasDiscount } from '../../utils/pricing';
 
+export const SALE_SHOP_PATH = '/shop?sale=1';
+
 const STORAGE_KEY = 'coorg_sale_popup_dismissed';
 
-export default function SalePopup() {
+/** Hero sale strip — place inside `.hero-content` (replaces eyebrow when sale is on). */
+export function SaleHeroBanner() {
+  return (
+    <Link to={SALE_SHOP_PATH} className="hero-sale-banner">
+      <span className="hero-sale-live">Sale is live</span>
+      <span className="hero-sale-copy">Book yours now before the sale ends</span>
+    </Link>
+  );
+}
+
+/** Full-screen sale popup — place once on the homepage. */
+export function SalePopup() {
   const navigate = useNavigate();
   const { computed } = useStore();
   const [open, setOpen] = useState(false);
@@ -40,7 +53,7 @@ export default function SalePopup() {
 
   const grabSale = () => {
     dismiss();
-    navigate('/shop?sale=1');
+    navigate(SALE_SHOP_PATH);
   };
 
   if (!open || saleCount === 0) return null;

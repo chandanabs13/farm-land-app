@@ -461,7 +461,7 @@ select {
   letter-spacing: 0.06em;
 }
 
-/* ===== SALE POPUP ===== */
+/* ===== SALE POPUP (SaleCampaign) ===== */
 .sale-popup-overlay {
   position: fixed;
   inset: 0;
@@ -1334,6 +1334,30 @@ select {
   padding: 32px;
   overflow: auto;
 }
+.admin-push-mobile {
+  display: none;
+  margin-bottom: 16px;
+}
+.admin-push-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.admin-push-banner.on {
+  border-color: color-mix(in srgb, var(--forest) 35%, var(--border));
+  color: var(--soil);
+}
+.admin-push-banner.muted {
+  font-size: 12px;
+}
 .admin-page-header {
   display: flex;
   align-items: flex-start;
@@ -1931,6 +1955,9 @@ tr:hover td {
   }
   .admin-content {
     padding: 16px;
+  }
+  .admin-push-mobile {
+    display: block;
   }
   .order-detail-grid {
     grid-template-columns: 1fr;
