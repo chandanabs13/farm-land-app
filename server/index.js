@@ -20,6 +20,9 @@ import {
   toggleProductAvailability,
 } from "../lib/products.js";
 import { INITIAL_PRODUCTS } from "../lib/seedProducts.js";
+import { chatWithGemini } from "../lib/gemini.js";
+import { executeStoreTool } from "../lib/chatTools.js";
+import { validateChatMessages } from "../lib/chatValidation.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -73,6 +76,30 @@ app.post("/api/orders", async (req, res) => {
       error: isNetwork
         ? "Cannot reach Supabase. Check your internet, or open supabase.com and restore the project if it is paused."
         : "Failed to save order",
+      details: err.message,
+    });
+  }
+});
+
+// ─── Public: AI customer support chat ─────────────────────────────────────────
+app.post("/api/chat", async (req, res) => {
+  const { messages } = req.body || {};
+  const validationError = validateChatMessages(messages);
+  if (validationError) {
+    return res.status(400).json({ error: validationError });
+  }
+  try {
+    const reply = await chatWithGemini(messages, {
+      executeTool: (name, args) => executeStoreTool(name, args, readProducts),
+    });
+    res.json({ reply });
+  } catch (err) {
+    console.error("POST /api/chat:", err.message);
+    const isConfig = err.message?.includes("GEMINI_API_KEY");
+    res.status(isConfig ? 503 : 500).json({
+      error: isConfig
+        ? "Chat is not configured yet. Add GEMINI_API_KEY to your .env file."
+        : "Could not get a reply. Please try again.",
       details: err.message,
     });
   }

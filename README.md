@@ -24,12 +24,17 @@ Open http://localhost:5173
 | `VAPID_PUBLIC_KEY` | from `npx web-push generate-vapid-keys` |
 | `VAPID_PRIVATE_KEY` | from `npx web-push generate-vapid-keys` |
 | `VAPID_SUBJECT` | `mailto:you@example.com` |
+| `GEMINI_API_KEY` | Gemini API key for the customer-support chat |
 
 5. Deploy → your site is live at `https://your-app.vercel.app`
 6. Update `public/sitemap.xml` and `public/robots.txt` with your real Vercel URL
 7. Submit sitemap in [Google Search Console](https://search.google.com/search-console)
 
 Orders API runs as Vercel serverless functions in `/api` — no separate server needed.
+
+## AI customer-support chat
+
+The chat assistant uses Gemini function calling for live catalog grounding. It can only call read-only catalog tools, and it fetches the current product data for every lookup; prices and availability are never supplied from the browser or hard-coded into the model prompt. Add `GEMINI_API_KEY` to local `.env` and Vercel environment variables. `GEMINI_MODEL` is optional and must name a function-calling-capable Gemini model.
 
 ## Admin phone alerts (browser push — like Zomato)
 

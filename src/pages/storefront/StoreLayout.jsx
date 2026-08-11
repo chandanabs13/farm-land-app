@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import Navbar from '../../components/shared/Navbar';
 import Footer from '../../components/shared/Footer';
+import ChatWidget from '../../components/storefront/ChatWidget';
 
 export default function StoreLayout() {
   return (
@@ -10,6 +11,7 @@ export default function StoreLayout() {
         <Outlet />
       </main>
       <Footer />
+      <ChatWidget />
     </>
   );
 }
